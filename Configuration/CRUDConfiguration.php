@@ -18,17 +18,46 @@ use Qimnet\CRUDBundle\Routing\CRUDPathGeneratorFactoryInterface;
 use Qimnet\CRUDBundle\Security\CRUDSecurityContextFactoryInterface;
 use Qimnet\CRUDBundle\Persistence\ObjectManagerFactoryInterface;
 
+/**
+ * Contains the configuration for a CRUD instance
+ *
+ * Contains the configuration needed for the CRUDController. To see the default
+ * configuration options, please see https://github.com/qimnet/crud-bundle/Resources/doc/index.rst
+ *
+ */
 class CRUDConfiguration implements CRUDConfigurationInterface
 {
+    /**
+     * Contains the options of the instance
+     *
+     * @var array
+     */
     protected $options;
+    /**
+     * @var CRUDPathGeneratorFactoryInterface
+     */
     protected $pathGeneratorFactory;
+    /**
+     * @var ObjectManagerFactoryInterface
+     */
     protected $objectManagerFactory;
+    /**
+     * @var CRUDSecurityContextFactoryInterface
+     */
     protected $securityContextFactory;
 
     private $pathGenerator;
     private $objectManager;
     private $securityContext;
 
+    /**
+     * Constructor
+     *
+     * @param ObjectManagerFactoryInterface $objectManagerFactory
+     * @param CRUDSecurityContextFactoryInterface $securityContextFactory
+     * @param CRUDPathGeneratorFactoryInterface $pathGeneratorFactory
+     * @param array $options
+     */
     public function __construct(
             ObjectManagerFactoryInterface $objectManagerFactory,
             CRUDSecurityContextFactoryInterface $securityContextFactory,
@@ -43,6 +72,11 @@ class CRUDConfiguration implements CRUDConfigurationInterface
         $this->objectManagerFactory = $objectManagerFactory;
     }
 
+    /**
+     * Sets the default options for the instance.
+     * 
+     * @param OptionsResolverInterface $resolver
+     */
     protected function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setRequired(array(
