@@ -1,0 +1,6 @@
+{% block crud_form %}
+    <form action="{{action}}" method="POST" {{ form_enctype(form) }}>
+        {{form_widget(form)}}
+        <input type="submit" value="{% trans from "crud" %}Save{% endtrans %}"/>
+    </form>
+{% endblock %}

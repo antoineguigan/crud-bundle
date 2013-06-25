@@ -1,0 +1,97 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="qimnet.crud.worker.class">Qimnet\CRUDBundle\Controller\Worker\CRUDControllerWorker</parameter>
+        <parameter key="qimnet.crud.configuration.class">Qimnet\CRUDBundle\Configuration\CRUDConfiguration</parameter>
+        <parameter key="qimnet.crud.configuration.repository.class">Qimnet\CRUDBundle\Configuration\CRUDConfigurationRepository</parameter>
+        <parameter key="qimnet.crud.object_manager.factory.doctrine.class">Qimnet\CRUDBundle\Persistence\DoctrineEntityManagerFactory</parameter>
+        <parameter key="qimnet.crud.controller.class">Qimnet\CRUDBundle\Controller\CRUDController</parameter>
+        <parameter key="qimnet.crud.path_generator.factory.class">Qimnet\CRUDBundle\Routing\CRUDPathGeneratorFactory</parameter>
+        <parameter key="qimnet.crud.security.factory.class">Qimnet\CRUDBundle\Security\CRUDSecurityContextFactory</parameter>
+        <parameter key="qimnet.filter.factory.class">Qimnet\CRUDBundle\Filter\FilterFactory</parameter>
+        <parameter key="qimnet.filter.type.registry.class">Qimnet\CRUDBundle\Filter\FilterTypeRegistry</parameter>
+        <parameter key="qimnet.crud.redirection_manager.class">Qimnet\CRUDBundle\Controller\RedirectionManager\CRUDRedirectionManager</parameter>
+        <parameter key="qimnet.crud.request.class">Qimnet\CRUDBundle\HTTP\CRUDRequest</parameter>
+        <parameter key="qimnet.crud.twig_extensions.class">Qimnet\CRUDBundle\Twig\Extensions</parameter>
+        <parameter key="qimnet.crud.object_manager.doctrine.default_class">Qimnet\CRUDBundle\Persistence\DoctrineEntityManager</parameter>
+        <parameter key="qimnet.crud.path_generator.default_class">Qimnet\CRUDBundle\Routing\CRUDPathGenerator</parameter>
+        <parameter key="qimnet.crud.security.default_class">Qimnet\CRUDBundle\Security\CRUDSecurityContext</parameter>
+    </parameters>
+
+    <services>
+        <service id="qimnet.crud.request" class="%qimnet.crud.request.class%" scope="request" synchronized="true">
+            <argument type="service" id="qimnet.crud.configuration.repository" />
+            <argument type="service" id="request" />
+        </service>
+
+        <service id="qimnet.crud.controller" class="%qimnet.crud.controller.class%">
+            <call method="setCRUDRequest">
+                <argument type="service" id="qimnet.crud.request" strict="false" on-invalid="null"/>
+            </call>
+        </service>
+
+        <service id="qimnet.crud.redirection_manager" class="%qimnet.crud.redirection_manager.class%">
+            <call method="setCRUDRequest">
+                <argument type="service" id="qimnet.crud.request" strict="false" on-invalid="null"/>
+            </call>
+        </service>
+        <service id="qimnet.crud.worker" class="%qimnet.crud.worker.class%">
+            <argument type="service" id="form.factory" />
+            <argument type="service" id="form.registry" />
+            <argument type="service" id="templating" />
+            <argument type="service" id="qimnet.table.builder.factory" />
+            <argument type="service" id="qimnet.paginator.factory" />
+            <argument type="service" id="qimnet.filter.factory" />
+            <argument type="service" id="form.csrf_provider" />
+            <call method="setCRUDRequest">
+                <argument type="service" id="qimnet.crud.request" strict="false" on-invalid="null"/>
+            </call>
+        </service>
+
+        <service id="qimnet.crud.configuration.repository" class="%qimnet.crud.configuration.repository.class%">
+            <argument type="service" id="service_container" />
+        </service>
+
+        <service id="qimnet.crud.configuration" class="%qimnet.crud.configuration.class%">
+            <argument type="service" id="qimnet.crud.object_manager.factory.doctrine" />
+            <argument type="service" id="qimnet.crud.security.factory" />
+            <argument type="service" id="qimnet.crud.path_generator.factory" />
+        </service>
+
+        <service id="qimnet.crud.object_manager.factory.doctrine" class="%qimnet.crud.object_manager.factory.doctrine.class%">
+            <tag name="qimnet.crud.object_manager.factory" alias="doctrine" />
+            <argument type="service" id="doctrine" />
+            <argument type="service" id="property_accessor" />
+            <argument>%qimnet.crud.object_manager.doctrine.default_class%</argument>
+        </service>
+
+        <service id="qimnet.crud.path_generator.factory" class="%qimnet.crud.path_generator.factory.class%">
+            <argument type="service" id="router" />
+            <argument type="service" id="property_accessor" />
+            <argument>%qimnet.crud.path_generator.default_class%</argument>
+        </service>
+
+        <service id="qimnet.crud.security.factory" class="%qimnet.crud.security.factory.class%">
+            <argument type="service" id="security.context" />
+            <argument>%qimnet.crud.security.default_class%</argument>
+        </service>
+
+       <service id="qimnet.filter.type.registry" class="%qimnet.filter.type.registry.class%">
+            <argument type="service" id="service_container" />
+        </service>
+
+        <service id="qimnet.filter.factory" class="%qimnet.filter.factory.class%">
+            <argument type="service" id="qimnet.filter.type.registry" />
+            <argument type="service" id="form.factory" />
+        </service>
+
+        <service id="qimnet.crud.twig_extensions" class="%qimnet.crud.twig_extensions.class%">
+            <argument type="service" id="service_container" />
+            <tag name="twig.extension"/>
+        </service>
+    </services>
+</container>

@@ -1,0 +1,375 @@
+<?php
+/*
+ * This file is part of the Qimnet CRUD Bundle.
+ *
+ * (c) Antoine Guigan <aguigan@qimnet.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
+namespace Qimnet\CRUDBundle\Controller\Worker;
+
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Qimnet\PaginatorBundle\Paginator\PaginatorInterface;
+use Qimnet\PaginatorBundle\Paginator\PaginatorFactoryInterface;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Templating\EngineInterface;
+use Symfony\Component\Form\Extension\Csrf\CsrfProvider\CsrfProviderInterface;
+use Qimnet\TableBundle\Table\Action;
+use Symfony\Component\Form\FormRegistryInterface;
+use Qimnet\CRUDBundle\Filter\FilterFactoryInterface;
+use Qimnet\TableBundle\Table\TableBuilderFactoryInterface;
+use Qimnet\CRUDBundle\Configuration\CRUDConfigurationInterface;
+use Qimnet\CRUDBundle\HTTP\CRUDRequestInterface;
+
+class CRUDControllerWorker implements CRUDControllerWorkerInterface
+{
+    /**
+     *
+     * @var CRUDConfigurationInterface
+     */
+    protected $tableBuilderFactory;
+    /**
+     * @var CRUDRequestInterface
+     */
+    protected $CRUDRequest;
+    protected $formFactory;
+    protected $formRegistry;
+    protected $templating;
+    protected $csrfProvider;
+    protected $filterFactory;
+    protected $paginatorFactory;
+
+    public function __construct(
+            FormFactoryInterface $formFactory,
+            FormRegistryInterface $formRegistry,
+            EngineInterface $templating,
+            TableBuilderFactoryInterface $tableBuilderFactory,
+            PaginatorFactoryInterface $paginatorFactory,
+            FilterFactoryInterface $filterFactory,
+            CsrfProviderInterface $csrfProvider)
+    {
+        $this->formFactory = $formFactory;
+        $this->formRegistry = $formRegistry;
+        $this->templating = $templating;
+        $this->filterFactory = $filterFactory;
+        $this->csrfProvider = $csrfProvider;
+        $this->tableBuilderFactory = $tableBuilderFactory;
+        $this->paginatorFactory = $paginatorFactory;
+    }
+    public function setCRUDRequest(CRUDRequestInterface $CRUDRequest=null)
+    {
+        $this->CRUDRequest = $CRUDRequest;
+    }
+
+    protected function getConfiguration()
+    {
+        return $this->CRUDRequest->getConfiguration();
+    }
+    protected function getRequest()
+    {
+        return $this->CRUDRequest->getRequest();
+    }
+    protected function getRedirectionManager()
+    {
+        return $this->CRUDRequest->getRedirectionManager();
+    }
+
+    protected function getFilterBuilder()
+    {
+        $filterType = $this->getConfiguration()->getFilterType();
+
+        return ($filterType)
+            ? $this->filterFactory->createFromType($this->getRequest()->getSession(), $filterType)
+            : null;
+
+    }
+    public function indexAction($page = 1, $sortField = 'id', $sortDirection = 'desc')
+    {
+        if (!$this->getConfiguration()->getSecurityContext()->isActionAllowed(Action::INDEX)) {
+            throw new AccessDeniedException;
+        }
+        $table = $this->tableBuilderFactory
+                ->createFromType(
+                        $this->getConfiguration()->getTableType(), $this->getConfiguration()->getQueryAlias())
+                ->getTable();
+
+        $tableView = $table->createView(
+                $this->getConfiguration()->getPathGenerator(), $this->getConfiguration()->getSecurityContext(), $sortField, $sortDirection, $this->getConfiguration()->getShowTemplate() ? Action::SHOW : Action::UPDATE);
+
+        $data = $this->getConfiguration()
+                ->getObjectManager()
+                ->getIndexData($table->getColumnSort($sortField), $sortDirection);
+
+        $filters = $this->getFilterBuilder();
+        if (isset($filters)) {
+            $filters->setFilters($data);
+        }
+
+        $pagination = $this->paginatorFactory->create(
+                $this->getConfiguration()->getPaginatorType(),
+                $data,
+                $page,
+                $this->getConfiguration()->getPaginatorOptions());
+
+        return $this->render(
+                        $this->getConfiguration()->getIndexTemplate(), array(
+                    'title' => $this->getConfiguration()->getIndexTitle(),
+                    'filters_form' => isset($filters) ? $filters->getForm()->createView() : null,
+                    'filter_action' => $this->getConfiguration()->getPathGenerator()->generate(Action::FILTER),
+                    'pagination' => $pagination->createView(),
+                    'route' => 'qimnet_crud_index',
+                    'routeParameters' => array(
+                        'configName' => $this->getConfiguration()->getName(),
+                        'sortField' => $sortField,
+                        'sortDirection' => $sortDirection
+                    ),
+                    'table' => $tableView,
+                    'batchActions' => $this->getBatchActions($pagination)
+                        ) + $this->getDefaultViewVars());
+    }
+
+    protected function persistEntity($entity, $isNew = false)
+    {
+        $this->getConfiguration()->getObjectManager()->persist($entity);
+        $this->flushEntities();
+    }
+
+    protected function createEntity(array $parameters=array())
+    {
+        return $this->getConfiguration()->getObjectManager()->create($parameters);
+    }
+
+    public function newAction()
+    {
+        if (!$this->getConfiguration()->getSecurityContext()->isActionAllowed(Action::CREATE)) {
+            throw new AccessDeniedException;
+        }
+        $parameters = array();
+        foreach ($this->getConfiguration()->getNewRouteParameterNames() as $name) {
+            if ($this->getRequest()->query->has($name)) {
+                $parameters[$name] = $this->getRequest()->query->get($name);
+            }
+        }
+        $entity = $this->createEntity($parameters);
+        $formType = $this->getFormType($entity);
+        $form = $this->createCRUDForm($formType, $entity);
+        $response = new Response;
+        if ($this->getRequest()->isMethod('POST')) {
+            $form->bind($this->getRequest());
+            if ($form->isValid()) {
+                $this->persistEntity($entity, true);
+
+                return $this->getRedirectionManager()->getCreateResponse($entity);
+            }
+            $response->headers->set('X-Form-errors', 'True');
+        }
+
+        return $this->render(
+                        $this->getConfiguration()->getNewTemplate(), array(
+                    'action'=>  $this->getConfiguration()->getPathGenerator()->generate(Action::CREATE, $parameters),
+                    'entity' => $entity,
+                    'title' => $this->getConfiguration()->getNewTitle(),
+                    'form' => $form->createView(),
+                    'form_type' => $formType->getName()
+                        ) + $this->getDefaultViewVars(), $response);
+    }
+
+    protected function findEntities($ids)
+    {
+        return $this->getConfiguration()->getObjectManager()->find($ids);
+    }
+
+    protected function findEntity($id)
+    {
+        $entities = $this->findEntities($id);
+        if (!count($entities)) {
+            throw new NotFoundHttpException;
+        }
+
+        return $entities[0];
+    }
+
+    protected function flushEntities()
+    {
+        $this->getConfiguration()->getObjectManager()->flush();
+    }
+
+    public function batchDeleteAction()
+    {
+        $this->checkCSRFToken();
+        $entities = $this->findEntities($this->getRequest()->get('ids', array()));
+        if (!count($entities)) {
+            return $this->getRedirectionManager()->getDeletesResponse('Please select at least one element.');
+        }
+        foreach ($entities as $entity) {
+            $this->doDelete($entity);
+        }
+        $this->flushEntities();
+
+        return $this->getRedirectionManager()->getDeletesResponse();
+    }
+
+    public function deleteAction($id)
+    {
+        $this->checkCSRFToken();
+        $entity = $this->findEntity($id);
+        $this->doDelete($entity);
+        $this->flushEntities();
+
+        return $this->getRedirectionManager()->getDeleteResponse($entity);
+    }
+
+    public function filterAction()
+    {
+        $filter = $this->getFilterBuilder();
+        $form = $filter->getForm();
+        $form->bind($this->getRequest());
+        if (!$form->isValid()) {
+            throw new \Exception('Form is not valid!');
+        }
+        $filter->setValues($form->getData());
+
+        return $this->getRedirectionManager()->getFilterResponse();
+    }
+
+    public function editAction($id)
+    {
+        $entity = $this->findEntity($id);
+        if (!$this->getConfiguration()->getSecurityContext()->isActionAllowed(Action::UPDATE, $entity)) {
+            throw new AccessDeniedException;
+        }
+        $response = new Response;
+        $formType = $this->getFormType($entity);
+        $form = $this->createCRUDForm($formType, $entity);
+        if ($this->getRequest()->isMethod('POST')) {
+            $form->bind($this->getRequest());
+            if ($form->isValid()) {
+                $this->persistEntity($entity);
+
+                return $this->getRedirectionManager()->getUpdateResponse($entity);
+            }
+            $response->headers->set('X-Form-errors', 'True');
+        }
+
+        return $this->render(
+                        $this->getConfiguration()->getEditTemplate(), array(
+                    'entity' => $entity,
+                    'title' => $this->getConfiguration()->getEditTitle(),
+                    'form' => $form->createView(),
+                    'form_type' => $formType->getName(),
+                    'action'=>  $this->getConfiguration()->getPathGenerator()->generate(Action::UPDATE,array(),$entity),
+                        ) + $this->getDefaultViewVars(), $response);
+    }
+
+    public function showAction($id)
+    {
+        $entity = $this->findEntity($id);
+        if (!$this->getConfiguration()->getSecurityContext()->isActionAllowed(Action::SHOW, $entity)) {
+            throw new AccessDeniedException;
+        }
+
+        return $this->render(
+            $this->getConfiguration()->getShowTemplate(), array(
+            'entity' => $entity,
+                ) + $this->getDefaultViewVars());
+    }
+
+    public function formAction($entity = null)
+    {
+        if (!$this->getConfiguration()->getSecurityContext()->isActionAllowed(
+                        (is_null($entity) || $this->getConfiguration()->getObjectManager()->isNew($entity)) ? Action::CREATE : Action::UPDATE, $entity)) {
+            throw new AccessDeniedException;
+        }
+        if (is_null($entity)) {
+            $entity = $this->createEntity();
+        }
+        $params = array(
+            'form' => $this->createCRUDForm($this->getFormType($entity), $entity)->createView(),
+            'entity' => $entity,
+            'standalone' => false) + $this->getDefaultViewVars();
+
+        if ($this->getConfiguration()->getObjectManager()->isNew($entity)) {
+            $params['action'] = $this->getConfiguration()->getPathGenerator()->generate(Action::CREATE, $params['route_parameters']);
+        } else {
+            $params['action'] = $this->getConfiguration()->getPathGenerator()->generate(Action::UPDATE, array(), $entity);
+        }
+
+        return $this->render($this->getConfiguration()->getFormTemplate(), $params);
+    }
+
+    protected function getDefaultViewVars()
+    {
+        $vars = $this->getConfiguration()->getDefaultViewVars($this->getRequest());
+        $vars['csrf_token'] = $this->csrfProvider->generateCsrfToken($this->getConfiguration()->getCSRFIntention());
+
+        return $vars;
+    }
+
+    protected function doDelete($entity)
+    {
+        if (!$this->getConfiguration()->getSecurityContext()->isActionAllowed(Action::DELETE, $entity)) {
+            throw new AccessDeniedException;
+        }
+        $this->getConfiguration()->getObjectManager()->remove($entity);
+    }
+
+    protected function getBatchActions(PaginatorInterface $pagination)
+    {
+        $actions = array();
+        foreach ($pagination->getAdapter()->getIterator() as $entity) {
+            if (is_array($entity) && isset($entity[0])) {
+                $objectVars = $entity;
+                $entity = $objectVars[0];
+            } else {
+                $objectVars = array();
+            }
+            if ($this->getConfiguration()->getSecurityContext()->isActionAllowed(Action::DELETE, $entity, $objectVars)) {
+                $actions['batchdelete'] = 'Delete';
+
+                break;
+            }
+        }
+
+        return $actions;
+    }
+
+    protected function checkCSRFToken()
+    {
+        if (!$this->csrfProvider->isCsrfTokenValid($this->getConfiguration()->getCSRFIntention(), $this->getRequest()->get('_token'))) {
+            throw new \Exception('Bad CSRF Token');
+        }
+    }
+
+    protected function getFormType($entity)
+    {
+        $formType = $this->getConfiguration()->getFormType($entity);
+        if (is_string($formType)) {
+            if ($this->formRegistry->hasType($formType)) {
+                $formType = $this->formRegistry->getType($formType);
+            } else {
+                $formType = new $formType;
+            }
+        }
+
+        return $formType;
+    }
+    protected function createCRUDForm($formType, $entity, array $options = array())
+    {
+        return $this->formFactory->create($formType, $entity, $options);
+    }
+
+    protected function render($template, $parameters, $response = null)
+    {
+        if (is_null($response)) {
+            $response = new Response;
+        }
+        $response->setContent($this->templating->render($template, $parameters));
+
+        return $response;
+    }
+
+}

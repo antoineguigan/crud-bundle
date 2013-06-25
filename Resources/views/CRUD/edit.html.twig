@@ -1,0 +1,10 @@
+{% extends base_template %}
+{% block qimnet_crud_title %}{{title|trans({"%entity%": entity, "%typeName%": type_name|humanize|trans })|capitalize}}{% endblock %}
+{% block qimnet_crud_content %}
+    {% include form_template %}
+{% endblock %}
+{% block qimnet_crud_links %}{% spaceless %}
+    {% if index_allowed %}
+        <a href="{{ index_url }}">{% trans from "crud" %}Back to list{% endtrans %}</a>
+    {% endif %}
+{% endspaceless %}{% endblock %}

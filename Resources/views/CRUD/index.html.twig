@@ -1,0 +1,96 @@
+{% extends base_template %}
+{% block qimnet_crud_title %}{{title|trans({"%typeName%": type_name|humanize|trans})|capitalize}}{% endblock %}
+
+{% block qimnet_crud_content %}
+    {% if pagination|length %}
+        <div class="qimnet-crud-index qimnet-crud" data-csrf-token="{{csrf_token}}"
+               data-route-prefix="{{route_prefix}}"
+               data-route-parameters="{{route_parameters|json_encode}}"
+               data-confirm-message="{% trans from "crud" %}Are you sure?{% endtrans %}">
+            <table>
+                <thead>
+                    <tr>
+                        {% if batchActions|length > 0 %}
+                            <th class="qimnet-crud-checkbox"><input type="checkbox"></th>
+                        {% endif %}
+                        {% for column in table.columnNames %}
+                            <th>{{table.renderSortLink(column)|raw}}</th>
+                        {% endfor %}
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i, entity in pagination %}
+                        {% if entity[0] is defined %}
+                            {% set objectVars = entity %}
+                            {% set entity = entity[0] %}
+                        {% else %}
+                            {% set objectVars = {} %}
+                        {% endif %}
+                        <tr class="{{cycle(['even', 'odd'], i)}}">
+                            {% if batchActions|length > 0 %}
+                                <td class="qimnet-crud-checkbox">
+                                    {% if table.batchActionsAllowed(entity, objectVars) %}
+                                        <input type="checkbox" value="{{entity.id}}">
+                                    {% endif %}
+                                </td>
+                            {% endif %}
+                            {% for column in table.columnNames %}
+                                <td class="qimnet-crud-index-cell">
+                                    {{table.render(entity, objectVars, column)|raw}}
+                                </td>
+                            {% endfor %}
+                            <td class="qimnet-crud-row-actions">
+                                {% if table.deleteAllowed(entity, objectVars) %}
+                                    {% block qimnet_crud_row_delete %}
+                                        <a class="delete" href="{{table.getDeleteUrl(entity, objectVars)}}">{% trans from "crud" %}Delete{% endtrans %}</a>
+                                    {% endblock %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% block qimnet_crud_index_bottom %}
+            {% block qimnet_crud_actions %}
+                {% if pagination|length and batchActions|length  > 0 %}
+                    <div class="qimnet-crud-index-actions">
+                        {% for route, label in batchActions %}
+                            <input type="button" data-route="{{route}}" value="{{label|trans}}"/>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endblock %}
+            {% block qimnet_crud_navigation %}
+                {{ sliding_pagination(pagination, route, routeParameters) }}
+            {% endblock %}
+        {% endblock %}
+        </div>
+    {% else %}
+        <p class='qimnet-crud-index-error'>{% trans from "crud" %}No results.{% endtrans %}</p>
+    {% endif %}
+{% endblock %}
+
+
+{% block qimnet_crud_links %}{% spaceless %}
+    {% if table.newAllowed %}
+        {% block qimnet_crud_link_new %}
+            <a href="{{ new_url }}">{% trans from "crud" %}Add a new record{% endtrans %}</a>
+        {% endblock %}
+    {% endif %}
+{% endspaceless %}{% endblock %}
+
+{% block qimnet_crud_filters %}
+    {% if filters_form %}
+        <div class="qimnet-crud-filters">
+            <form action="{{ filter_action }}" method="POST" >
+                <div class="qimnet-crud-filters-widgets">
+                    {{form_widget(filters_form)}}
+                </div>
+                <div class="form-submit">
+                    <input type="submit" value="{% trans from "crud" %}Filter{% endtrans %}"/>
+                </div>
+            </form>
+        </div>
+    {% endif %}
+{% endblock %}
