@@ -14,9 +14,9 @@ interface CRUDControllerWorkerInterface
     /**
      * Displays a list of object
      *
-     * @param int $page the page number, starting with 1
-     * @param string $sortField the name of the column used to sort
-     * @param string $sortDirection the sort direction (asc|desc)
+     * @param  int      $page          the page number, starting with 1
+     * @param  string   $sortField     the name of the column used to sort
+     * @param  string   $sortDirection the sort direction (asc|desc)
      * @return Response
      */
     public function indexAction($page=1, $sortField='id', $sortDirection='desc');
@@ -31,7 +31,7 @@ interface CRUDControllerWorkerInterface
     /**
      * Displays and manages a form for object edition
      *
-     * @param string $id the id of the object
+     * @param  string   $id the id of the object
      * @return Response
      */
     public function editAction($id);
@@ -39,7 +39,7 @@ interface CRUDControllerWorkerInterface
     /**
      * Displays an embeddable form for a given entity
      *
-     * @param type $entity
+     * @param  type     $entity
      * @return Response
      */
     public function formAction($entity=null);
@@ -47,7 +47,7 @@ interface CRUDControllerWorkerInterface
     /**
      * Shows an object
      *
-     * @param string $id the id of the object
+     * @param  string $id the id of the object
      * @return type
      */
     public function showAction($id);
@@ -62,11 +62,10 @@ interface CRUDControllerWorkerInterface
     /**
      * Deletes a single object
      *
-     * @param string $id
+     * @param  string   $id
      * @return Response
      */
     public function deleteAction($id);
-
 
     /**
      * Stores the filter form data in the session
@@ -74,5 +73,5 @@ interface CRUDControllerWorkerInterface
      * @return Response
      */
     public function filterAction();
-    
+
 }

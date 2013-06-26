@@ -51,9 +51,9 @@ class CRUDController
     /**
      * Displays a list of object
      *
-     * @param int $page the page number, starting with 1
-     * @param string $sortField the name of the column used to sort
-     * @param string $sortDirection the sort direction (asc|desc)
+     * @param  int      $page          the page number, starting with 1
+     * @param  string   $sortField     the name of the column used to sort
+     * @param  string   $sortDirection the sort direction (asc|desc)
      * @return Response
      */
     public function indexAction($page=1, $sortField='id', $sortDirection='desc')
@@ -74,7 +74,7 @@ class CRUDController
     /**
      * Displays and manages a form for object edition
      *
-     * @param string $id the id of the object
+     * @param  string   $id the id of the object
      * @return Response
      */
     public function editAction($id)
@@ -85,7 +85,7 @@ class CRUDController
     /**
      * Displays an embeddable form for a given entity
      *
-     * @param type $entity
+     * @param  type     $entity
      * @return Response
      */
     public function formAction($entity=null)
@@ -96,7 +96,7 @@ class CRUDController
     /**
      * Shows an object
      *
-     * @param string $id the id of the object
+     * @param  string $id the id of the object
      * @return type
      */
     public function showAction($id)
@@ -116,13 +116,14 @@ class CRUDController
         if (!method_exists($worker, $method)) {
             throw new \RuntimeException(sprintf('Please implement method "%s" in your worker class.', $method));
         }
+
         return $this->getWorker()->$method();
     }
 
     /**
      * Deletes a single object
      *
-     * @param string $id
+     * @param  string   $id
      * @return Response
      */
     public function deleteAction($id)
@@ -139,6 +140,5 @@ class CRUDController
     {
         return $this->getWorker()->filterAction();
     }
-
 
 }

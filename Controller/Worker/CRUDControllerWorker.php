@@ -78,12 +78,12 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
     /**
      * Constructor
      *
-     * @param FormFactoryInterface $formFactory
-     * @param FormRegistryInterface $formRegistry
-     * @param EngineInterface $templating
-     * @param TableBuilderFactoryInterface $tableBuilderFactory
-     * @param PaginatorFactoryInterface $paginatorFactory
-     * @param FilterFactoryInterface $filterFactory
+     * @param FormFactoryInterface               $formFactory
+     * @param FormRegistryInterface              $formRegistry
+     * @param EngineInterface                    $templating
+     * @param TableBuilderFactoryInterface       $tableBuilderFactory
+     * @param PaginatorFactoryInterface          $paginatorFactory
+     * @param FilterFactoryInterface             $filterFactory
      * @param CsrfProvider\CsrfProviderInterface $csrfProvider
      */
     public function __construct(
@@ -327,7 +327,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
      * Each batch action must hava a corresponding batch{XXX}Action method in the
      * worker, where {XXX} is the capitalized name of the batch action.
      *
-     * @param \Qimnet\PaginatorBundle\Paginator\PaginatorInterface $pagination
+     * @param  \Qimnet\PaginatorBundle\Paginator\PaginatorInterface $pagination
      * @return string
      */
     protected function getBatchActions(PaginatorInterface $pagination)
@@ -386,7 +386,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
 
         return $formType;
     }
-    
+
     private function createCRUDForm($formType, $entity, array $options = array())
     {
         return $this->formFactory->create($formType, $entity, $options);
@@ -401,7 +401,6 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
 
         return $response;
     }
-
 
     private function findEntities($ids)
     {
@@ -423,7 +422,6 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
         $this->getConfiguration()->getObjectManager()->flush();
     }
 
-
     private function persistEntity($entity, $isNew = false)
     {
         $this->getConfiguration()->getObjectManager()->persist($entity);
@@ -443,7 +441,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
             : null;
 
     }
-    
+
     private function getConfiguration()
     {
         return $this->CRUDRequest->getConfiguration();
@@ -453,7 +451,6 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
     {
         return $this->CRUDRequest->getRequest();
     }
-
 
     private function getRedirectionManager()
     {
