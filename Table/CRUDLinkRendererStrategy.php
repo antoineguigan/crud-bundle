@@ -48,7 +48,11 @@ class CRUDLinkRendererStrategy extends AbstractTableRendererStrategyDecorator
         $configuration = $this->CRUDRequest->getConfiguration();
         $security = $configuration->getSecurityContext();
         $action = false;
-        $actions = isset($options['actions']) ? $options['actions'] : array(CRUDAction::SHOW, CRUDAction::UPDATE);
+        $actions = isset($options['actions'])
+                ? $options['actions']
+                : ($configuration->getShowTemplate()
+                    ? array(CRUDAction::SHOW, CRUDAction::UPDATE)
+                    : array(CRUDAction::UPDATE));
         foreach ($actions as $_action) {
             if ($security->isActionAllowed($_action, $options['object'], $options['object_vars'])) {
                 $action = $_action;
