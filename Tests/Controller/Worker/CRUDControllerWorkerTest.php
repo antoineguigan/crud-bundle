@@ -289,8 +289,8 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
                             ), $parameters['route_parameters']);
                             $testCase->assertEquals('table', $parameters['table']);
                             $testCase->assertEquals(
-                                    $allowDelete ? array('batchdelete'=>'Delete') : array(),
-                                    $parameters['batchActions']);
+                                    $allowDelete ? array('delete'=>'Delete') : array(),
+                                    $parameters['batch_actions']);
 
                             return true;
                         }))
