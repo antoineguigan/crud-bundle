@@ -155,7 +155,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
                         'sortDirection' => $sortDirection
                     ),
                     'table' => $table->createView($configuration->getSortLinkRendererOptions()),
-                    'batchActions' => $this->getBatchActions($pagination)
+                    'batch_actions' => $this->getBatchActions($pagination)
                 ) + $this->getDefaultViewVars());
     }
 
@@ -342,7 +342,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
                 $objectVars = array();
             }
             if ($this->getConfiguration()->getSecurityContext()->isActionAllowed(CRUDAction::DELETE, $entity, $objectVars)) {
-                $actions['batchdelete'] = 'Delete';
+                $actions['delete'] = 'Delete';
 
                 break;
             }
