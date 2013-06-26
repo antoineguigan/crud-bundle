@@ -37,10 +37,12 @@
         </service>
 
         <service id="qimnet.crud.redirection_manager" class="%qimnet.crud.redirection_manager.class%">
+            <argument type="service" id="translator.default"/>
             <call method="setCRUDRequest">
                 <argument type="service" id="qimnet.crud.request" strict="false" on-invalid="null"/>
             </call>
         </service>
+        
         <service id="qimnet.crud.worker" class="%qimnet.crud.worker.class%">
             <argument type="service" id="form.factory" />
             <argument type="service" id="form.registry" />
