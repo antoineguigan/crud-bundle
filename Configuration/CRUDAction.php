@@ -10,7 +10,7 @@
 namespace Qimnet\CRUDBundle\Configuration;
 
 /**
- * Constants for CRUD Bundle actions
+ * Constants representing CRUD Bundle actions
  */
 class CRUDAction
 {

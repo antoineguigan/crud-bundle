@@ -58,6 +58,7 @@ class SortLinkRendererStrategy extends AbstractTableRendererStrategyDecorator
                 ->generate(CRUDAction::INDEX,array(
                     'sortField'=>$options['column_name'],
                     'sortDirection'=>$sortDirection));
+
         return sprintf('<a class="%s" href="%s">%s</a>', $classes, htmlspecialchars($link), $this->renderParent($value, $options));
     }
 }

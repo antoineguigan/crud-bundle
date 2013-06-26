@@ -13,8 +13,6 @@ use Qimnet\CRUDBundle\HTTP\CRUDRequestInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Translation\TranslatorInterface;
 use Qimnet\CRUDBundle\Configuration\CRUDAction;
-use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 class CRUDRedirectionManager  implements CRUDRedirectionManagerInterface
 {
@@ -23,7 +21,6 @@ class CRUDRedirectionManager  implements CRUDRedirectionManagerInterface
      */
     protected $CRUDRequest;
     protected $translator;
-
 
     public function __construct(TranslatorInterface $translator)
     {
@@ -36,18 +33,21 @@ class CRUDRedirectionManager  implements CRUDRedirectionManagerInterface
     public function getCreateResponse($entity)
     {
         $this->addFlash($this->translator->trans('CREATE_FLASH', array('entity'=>$entity), 'crud'));
+
         return $this->getIndexRedirectResponse();
     }
 
     public function getDeleteResponse($entity)
     {
         $this->addFlash($this->translator->trans('DELETE_FLASH', array('entity'=>$entity), 'crud'));
+
         return $this->getIndexRedirectResponse();
     }
 
     public function getDeletesResponse($error = '')
     {
         $this->addFlash($this->translator->trans($error?:'DELETES_FLASH',array(), 'crud'));
+
         return $this->getIndexRedirectResponse();
     }
 
@@ -59,6 +59,7 @@ class CRUDRedirectionManager  implements CRUDRedirectionManagerInterface
     public function getUpdateResponse($entity)
     {
         $this->addFlash($this->translator->trans('UPDATE_FLASH', array('entity'=>$entity), 'crud'));
+
         return $this->getIndexRedirectResponse();
     }
     protected function getIndexRedirectResponse()

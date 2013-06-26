@@ -43,12 +43,13 @@ class Extensions extends \Twig_Extension
         );
     }
     /**
-     * @param mixed $entity
+     * @param  mixed                      $entity
      * @return CRUDConfigurationInterface
      */
     private function getConfiguration($entity)
     {
         $repository = $this->container->get('qimnet.crud.configuration.repository');
+
         return is_string($entity)
                 ? $repository->get($entity)
                 : $repository->getForEntity($entity);
@@ -57,16 +58,20 @@ class Extensions extends \Twig_Extension
     {
         return $this->getConfiguration($entity)->getPathGenerator()->generate($action, $parameters, $entity);
     }
-    public function editable($object, $objectVars=array()) {
+    public function editable($object, $objectVars=array())
+    {
         return $this->getConfiguration($object)->getSecurityContext()->isActionAllowed(CRUDAction::UPDATE, $object, $objectVars);
     }
-    public function deletable($object, $objectVars=array()) {
+    public function deletable($object, $objectVars=array())
+    {
         return $this->getConfiguration($object)->getSecurityContext()->isActionAllowed(CRUDAction::DELETE, $object, $objectVars);
     }
-    public function creatable($object) {
+    public function creatable($object)
+    {
         return $this->getConfiguration($object)->getSecurityContext()->isActionAllowed(CRUDAction::CREATE);
     }
-    public function listable($object) {
+    public function listable($object)
+    {
         return $this->getConfiguration($object)->getSecurityContext()->isActionAllowed(CRUDAction::INDEX);
     }
 }

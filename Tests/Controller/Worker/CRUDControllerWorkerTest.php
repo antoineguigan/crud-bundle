@@ -93,7 +93,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
                 ->expects($this->any())
                 ->method('getSortLinkRendererOptions')
                 ->will($this->returnValue(array()));
-        
+
         $this->securityContext = $this->getMock('Qimnet\CRUDBundle\Security\CRUDSecurityContextInterface');
         $this->configuration
                 ->expects($this->any())

@@ -27,7 +27,7 @@ class CRUDLinkRendererStrategy extends AbstractTableRendererStrategyDecorator
     {
         $this->CRUDRequest = $CRUDRequest;
     }
-    
+
     public function canRender($value, array $options = array())
     {
         return true;
@@ -49,7 +49,7 @@ class CRUDLinkRendererStrategy extends AbstractTableRendererStrategyDecorator
         $security = $configuration->getSecurityContext();
         $action = false;
         $actions = isset($options['actions']) ? $options['actions'] : array(CRUDAction::SHOW, CRUDAction::UPDATE);
-        foreach($actions as $_action) {
+        foreach ($actions as $_action) {
             if ($security->isActionAllowed($_action, $options['object'], $options['object_vars'])) {
                 $action = $_action;
                 break;
@@ -62,6 +62,7 @@ class CRUDLinkRendererStrategy extends AbstractTableRendererStrategyDecorator
                         isset($options['link_parameters']) ? $options['link_parameters'] : array(),
                         $options['object'],
                         $options['object_vars']);
+
             return sprintf('<a href="%s">%s</a>', htmlspecialchars($link), $this->renderParent($value, $options));
         } else {
             return $this->renderParent($value, $options);

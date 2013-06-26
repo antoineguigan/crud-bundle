@@ -9,7 +9,6 @@
  */
 namespace Qimnet\CRUDBundle\Tests\Configuration;
 
-use Qimnet\CRUDBundle\Configuration\CRUDAction;
 use Qimnet\CRUDBundle\Configuration\CRUDConfiguration;
 
 class CRUDConfigurationTest extends \PHPUnit_Framework_TestCase

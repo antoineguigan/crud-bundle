@@ -192,7 +192,7 @@ interface CRUDConfigurationInterface
 
     /**
      * Returns the options for the rendererer of the headers of CRUD lists
-     * 
+     *
      * @return array
      */
     public function getSortLinkRendererOptions();
