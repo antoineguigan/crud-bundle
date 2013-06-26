@@ -155,7 +155,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
                         'sortDirection' => $sortDirection
                     ),
                     'table' => $table->createView($configuration->getSortLinkRendererOptions()),
-                    'batch_actions' => $this->getBatchActions($pagination)
+                    'batch_actions' => $this->getAllowedBatchActions($pagination)
                 ) + $this->getDefaultViewVars());
     }
 
@@ -328,29 +328,48 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
      * Each batch action must hava a corresponding batch{XXX}Action method in the
      * worker, where {XXX} is the capitalized name of the batch action.
      *
-     * @param  \Qimnet\PaginatorBundle\Paginator\PaginatorInterface $pagination
      * @return string
      */
-    protected function getBatchActions(PaginatorInterface $pagination)
+    protected function getBatchActions()
     {
-        $actions = array();
-        foreach ($pagination->getAdapter()->getIterator() as $entity) {
-            if (is_array($entity) && isset($entity[0])) {
-                $objectVars = $entity;
-                $entity = $objectVars[0];
+        return array(CRUDAction::DELETE=>'Delete');
+    }
+
+
+    private function getAllowedBatchActions(PaginatorInterface $pagination)
+    {
+        $availableBatchActions = $this->getBatchActions();
+        $allowedBatchActions = array();
+        $batchActions = array();
+        $security = $this->getConfiguration()->getSecurityContext();
+        $batchActionKeys = array_keys($availableBatchActions);
+        $iterator = $pagination->getAdapter()->getIterator();
+        foreach ($iterator as $entity) {
+            if (is_array($entity) && isset($entity[1])) {
+                $objectVars = $entity[1];
+                $entity = $entity[0];
             } else {
                 $objectVars = array();
             }
-            if ($this->getConfiguration()->getSecurityContext()->isActionAllowed(CRUDAction::DELETE, $entity, $objectVars)) {
-                $actions['delete'] = 'Delete';
-
+            foreach($availableBatchActions as $actionName=>$actionLabel) {
+                if ($security->isActionAllowed($actionName, $entity, $objectVars)) {
+                    $allowedBatchActions[$actionName] = $actionLabel;
+                    unset($availableBatchActions[$actionName]);
+                    break;
+                }
+            }
+            if (!count($availableBatchActions)) {
                 break;
             }
         }
-
-        return $actions;
+        foreach($batchActionKeys as $actionName) {
+            if (isset($allowedBatchActions[$actionName])) {
+                $batchActions[$actionName] = $allowedBatchActions[$actionName];
+            }
+        }
+        return $batchActions;
     }
-
+    
     private function getDefaultViewVars()
     {
         $vars = $this->getConfiguration()->getDefaultViewVars($this->getRequest());
