@@ -12,8 +12,14 @@ namespace Qimnet\CRUDBundle\DependencyInjection\Compiler;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
+/**
+ * Adds filter types to the registry
+ */
 class FilterTypeCompilerPass implements CompilerPassInterface
 {
+    /**
+     * @inheritdoc
+     */
     public function process(ContainerBuilder $container)
     {
         if (!$container->hasDefinition('qimnet.filter.type.registry')) {

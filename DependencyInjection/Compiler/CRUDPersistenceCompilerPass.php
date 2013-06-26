@@ -12,8 +12,14 @@ namespace Qimnet\CRUDBundle\DependencyInjection\Compiler;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
+/**
+ * Adds object managers to the registry
+ */
 class CRUDPersistenceCompilerPass implements CompilerPassInterface
 {
+    /**
+     * @inheritdoc
+     */
     public function process(ContainerBuilder $container)
     {
         if (!$container->hasDefinition('qimnet.crud.object_manager.registry')) {

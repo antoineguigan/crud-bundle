@@ -14,8 +14,14 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\DefinitionDecorator;
 use Symfony\Component\DependencyInjection\Reference;
 
+/**
+ * Creates the CRUD configuration services
+ */
 class CRUDConfigurationCompilerPass implements CompilerPassInterface
 {
+    /**
+     * @inheritdoc
+     */
     public function process(ContainerBuilder $container)
     {
         if (!$container->hasDefinition('qimnet.crud.configuration.repository')) {
