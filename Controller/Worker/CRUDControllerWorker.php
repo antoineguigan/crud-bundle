@@ -106,6 +106,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
 
     /**
      * Sets the current CRUD request
+     * 
      * @param CRUDRequestInterface $CRUDRequest
      */
     public function setCRUDRequest(CRUDRequestInterface $CRUDRequest=null)
