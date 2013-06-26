@@ -3,12 +3,12 @@
 
 {% block qimnet_crud_content %}
     {% if pagination|length %}
-        <div class="qimnet-crud-index qimnet-crud" {% block qimnet_crud_index_attr %}data-csrf-token="{{csrf_token}}"{% endblock %}>
+<form class="qimnet-crud-index qimnet-crud" {% block qimnet_crud_index_attr  %}method="POST"{% endblock %}>
             <table>
                 <thead>
                     <tr>
-                        {% if batchActions|length > 0 %}
-                            <th class="qimnet-crud-checkbox"><input type="checkbox"></th>
+                        {% if batch_actions|length > 0 %}
+                            <th class="qimnet-crud-header-checkbox"><input type="checkbox"></th>
                         {% endif %}
                         {% for column in table.columnNames %}
                             <th>{{table.renderHeader(column)|raw}}</th>
@@ -25,10 +25,10 @@
                             {% set objectVars = {} %}
                         {% endif %}
                         <tr class="{{cycle(['even', 'odd'], i)}}">
-                            {% if batchActions|length > 0 %}
+                            {% if batch_actions|length > 0 %}
                                 <td class="qimnet-crud-checkbox">
                                     {% if deletable(entity, objectVars) %}
-                                        <input type="checkbox" value="{{entity.id}}">
+                                        <input type="checkbox" name="ids[]" value="{{entity.id}}">
                                     {% endif %}
                                 </td>
                             {% endif %}
@@ -40,7 +40,7 @@
                             <td class="qimnet-crud-row-actions">
                                 {% if deletable(entity, objectVars) %}
                                     {% block qimnet_crud_row_delete %}
-                                        <a class="delete" href="{{crud_path(entity, "delete", {}, objectVars)}}">{% trans from "crud" %}Delete{% endtrans %}</a>
+                                        <button class="qimnet-crud-delete" type="button" data-action="{{crud_path(entity, "delete", {}, objectVars)}}">{% trans from "crud" %}Delete{% endtrans %}</button>
                                     {% endblock %}
                                 {% endif %}
                             </td>
@@ -48,21 +48,24 @@
                     {% endfor %}
                 </tbody>
             </table>
-        {% block qimnet_crud_index_bottom %}
-            {% block qimnet_crud_actions %}
-                {% if pagination|length and batchActions|length  > 0 %}
-                    <div class="qimnet-crud-index-actions">
-                        {% for action, label in batchActions %}
-                            <input type="button" data-action="{{crud_path(type_name,"batch",{action: action})}}" value="{{label|trans}}"/>
-                        {% endfor %}
-                    </div>
-                {% endif %}
+            {% block qimnet_crud_index_bottom %}
+                {% block qimnet_crud_hidden_fields %}
+                    <input type="hidden" name="_token" value="{{csrf_token}}" class="qimnet-crud-token">
+                {% endblock %}
+                {% block qimnet_crud_actions %}
+                    {% if pagination|length and batch_actions|length  > 0 %}
+                        <div class="qimnet-crud-index-actions">
+                            {% for action, label in batch_actions %}
+                                <button type="button" data-action="{{crud_path(type_name,"batch",{action: action})}}">{{label|trans}}</button>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endblock %}
+                {% block qimnet_crud_navigation %}
+                    {{ sliding_pagination(pagination, route, route_parameters) }}
+                {% endblock %}
             {% endblock %}
-            {% block qimnet_crud_navigation %}
-                {{ sliding_pagination(pagination, route, route_parameters) }}
-            {% endblock %}
-        {% endblock %}
-        </div>
+        </form>
     {% else %}
         <p class='qimnet-crud-index-error'>{% trans from "crud" %}No results.{% endtrans %}</p>
     {% endif %}
