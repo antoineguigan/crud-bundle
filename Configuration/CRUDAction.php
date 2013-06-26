@@ -20,4 +20,5 @@ class CRUDAction
     const DELETE='delete';
     const SHOW='show';
     const FILTER='filter';
+    const BATCH='batch';
 }

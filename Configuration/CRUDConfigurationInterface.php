@@ -196,4 +196,5 @@ interface CRUDConfigurationInterface
      * @return array
      */
     public function getSortLinkRendererOptions();
+
 }

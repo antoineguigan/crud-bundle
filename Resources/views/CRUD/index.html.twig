@@ -52,8 +52,8 @@
             {% block qimnet_crud_actions %}
                 {% if pagination|length and batchActions|length  > 0 %}
                     <div class="qimnet-crud-index-actions">
-                        {% for route, label in batchActions %}
-                            <input type="button" data-route="{{route}}" value="{{label|trans}}"/>
+                        {% for action, label in batchActions %}
+                            <input type="button" data-action="{{crud_path(type_name,"batch",{action: action})}}" value="{{label|trans}}"/>
                         {% endfor %}
                     </div>
                 {% endif %}

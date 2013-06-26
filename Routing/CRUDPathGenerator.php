@@ -26,7 +26,8 @@ class CRUDPathGenerator implements CRUDPathGeneratorInterface
         CRUDAction::INDEX=>'index',
         CRUDAction::SHOW=>'show',
         CRUDAction::UPDATE=>'edit',
-        CRUDAction::FILTER=>'filter'
+        CRUDAction::FILTER=>'filter',
+        CRUDAction::BATCH=>'batch'
     );
 
     public function __construct(RouterInterface $router,

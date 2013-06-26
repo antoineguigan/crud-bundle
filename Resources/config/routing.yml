@@ -25,10 +25,10 @@ qimnet_crud_new:
     methods: [GET,POST]
     options: { expose: true }
 
-qimnet_crud_batchdelete:
-    path: %qimnet.crud.path_prefix%/{configName}/batch/delete
+qimnet_crud_batch:
+    path: %qimnet.crud.path_prefix%/{configName}/batch/{action}
     defaults:
-        _controller: qimnet.crud.controller:batchDeleteAction
+        _controller: qimnet.crud.controller:batchAction
     methods: [POST]
     options: { expose: true }
 

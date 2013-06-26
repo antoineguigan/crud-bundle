@@ -25,6 +25,13 @@ use Qimnet\TableBundle\Table\TableBuilderFactoryInterface;
 use Qimnet\CRUDBundle\Configuration\CRUDConfigurationInterface;
 use Qimnet\CRUDBundle\HTTP\CRUDRequestInterface;
 
+/**
+ * Worker class for CRUD requests
+ *
+ * This class contains all the controller logic for CRUD requests.
+ * Custom batch actions can be created by extending this class and overriding
+ * the getBatchActions method.
+ */
 class CRUDControllerWorker implements CRUDControllerWorkerInterface
 {
     /**
@@ -32,17 +39,53 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
      * @var CRUDConfigurationInterface
      */
     protected $tableBuilderFactory;
+
     /**
      * @var CRUDRequestInterface
      */
     protected $CRUDRequest;
+
+    /**
+     * @var FormFactoryInterface
+     */
     protected $formFactory;
+
+    /**
+     * @var FormRegistryInterface
+     */
     protected $formRegistry;
+
+    /**
+     * @var EngineInterface
+     */
     protected $templating;
+
+    /**
+     * @var CsrfProviderInterface
+     */
     protected $csrfProvider;
+
+    /**
+     * @var FilterFactoryInterface
+     */
     protected $filterFactory;
+
+    /**
+     * @var PaginatorFactoryInterface
+     */
     protected $paginatorFactory;
 
+    /**
+     * Constructor
+     *
+     * @param FormFactoryInterface $formFactory
+     * @param FormRegistryInterface $formRegistry
+     * @param EngineInterface $templating
+     * @param TableBuilderFactoryInterface $tableBuilderFactory
+     * @param PaginatorFactoryInterface $paginatorFactory
+     * @param FilterFactoryInterface $filterFactory
+     * @param CsrfProvider\CsrfProviderInterface $csrfProvider
+     */
     public function __construct(
             FormFactoryInterface $formFactory,
             FormRegistryInterface $formRegistry,
@@ -60,33 +103,19 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
         $this->tableBuilderFactory = $tableBuilderFactory;
         $this->paginatorFactory = $paginatorFactory;
     }
+
+    /**
+     * Sets the current CRUD request
+     * @param CRUDRequestInterface $CRUDRequest
+     */
     public function setCRUDRequest(CRUDRequestInterface $CRUDRequest=null)
     {
         $this->CRUDRequest = $CRUDRequest;
     }
 
-    protected function getConfiguration()
-    {
-        return $this->CRUDRequest->getConfiguration();
-    }
-    protected function getRequest()
-    {
-        return $this->CRUDRequest->getRequest();
-    }
-    protected function getRedirectionManager()
-    {
-        return $this->CRUDRequest->getRedirectionManager();
-    }
-
-    protected function getFilterBuilder()
-    {
-        $filterType = $this->getConfiguration()->getFilterType();
-
-        return ($filterType)
-            ? $this->filterFactory->createFromType($this->getRequest()->getSession(), $filterType)
-            : null;
-
-    }
+    /**
+     * @inheritdoc
+     */
     public function indexAction($page = 1, $sortField = 'id', $sortDirection = 'desc')
     {
         $configuration = $this->getConfiguration();
@@ -129,17 +158,9 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
                 ) + $this->getDefaultViewVars());
     }
 
-    protected function persistEntity($entity, $isNew = false)
-    {
-        $this->getConfiguration()->getObjectManager()->persist($entity);
-        $this->flushEntities();
-    }
-
-    protected function createEntity(array $parameters=array())
-    {
-        return $this->getConfiguration()->getObjectManager()->create($parameters);
-    }
-
+    /**
+     * @inheritdoc
+     */
     public function newAction()
     {
         if (!$this->getConfiguration()->getSecurityContext()->isActionAllowed(CRUDAction::CREATE)) {
@@ -175,26 +196,9 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
                         ) + $this->getDefaultViewVars(), $response);
     }
 
-    protected function findEntities($ids)
-    {
-        return $this->getConfiguration()->getObjectManager()->find($ids);
-    }
-
-    protected function findEntity($id)
-    {
-        $entities = $this->findEntities($id);
-        if (!count($entities)) {
-            throw new NotFoundHttpException;
-        }
-
-        return $entities[0];
-    }
-
-    protected function flushEntities()
-    {
-        $this->getConfiguration()->getObjectManager()->flush();
-    }
-
+    /**
+     * @inheritdoc
+     */
     public function batchDeleteAction()
     {
         $this->checkCSRFToken();
@@ -210,6 +214,9 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
         return $this->getRedirectionManager()->getDeletesResponse();
     }
 
+    /**
+     * @inheritdoc
+     */
     public function deleteAction($id)
     {
         $this->checkCSRFToken();
@@ -220,6 +227,9 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
         return $this->getRedirectionManager()->getDeleteResponse($entity);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function filterAction()
     {
         $filter = $this->getFilterBuilder();
@@ -233,6 +243,9 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
         return $this->getRedirectionManager()->getFilterResponse();
     }
 
+    /**
+     * @inheritdoc
+     */
     public function editAction($id)
     {
         $entity = $this->findEntity($id);
@@ -262,6 +275,9 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
                         ) + $this->getDefaultViewVars(), $response);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function showAction($id)
     {
         $entity = $this->findEntity($id);
@@ -275,6 +291,9 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
                 ) + $this->getDefaultViewVars());
     }
 
+    /**
+     * @inheritdoc
+     */
     public function formAction($entity = null)
     {
         if (!$this->getConfiguration()->getSecurityContext()->isActionAllowed(
@@ -298,22 +317,19 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
         return $this->render($this->getConfiguration()->getFormTemplate(), $params);
     }
 
-    protected function getDefaultViewVars()
-    {
-        $vars = $this->getConfiguration()->getDefaultViewVars($this->getRequest());
-        $vars['csrf_token'] = $this->csrfProvider->generateCsrfToken($this->getConfiguration()->getCSRFIntention());
-
-        return $vars;
-    }
-
-    protected function doDelete($entity)
-    {
-        if (!$this->getConfiguration()->getSecurityContext()->isActionAllowed(CRUDAction::DELETE, $entity)) {
-            throw new AccessDeniedException;
-        }
-        $this->getConfiguration()->getObjectManager()->remove($entity);
-    }
-
+    /**
+     * Returns an associative array representing the available batch actions
+     *
+     * Batch actions can be added to a configuration by overriding this method.
+     * The returned array's keys contain the name of the batch actions, and the
+     * values contain their labels.
+     *
+     * Each batch action must hava a corresponding batch{XXX}Action method in the
+     * worker, where {XXX} is the capitalized name of the batch action.
+     *
+     * @param \Qimnet\PaginatorBundle\Paginator\PaginatorInterface $pagination
+     * @return string
+     */
     protected function getBatchActions(PaginatorInterface $pagination)
     {
         $actions = array();
@@ -334,14 +350,30 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
         return $actions;
     }
 
-    protected function checkCSRFToken()
+    private function getDefaultViewVars()
+    {
+        $vars = $this->getConfiguration()->getDefaultViewVars($this->getRequest());
+        $vars['csrf_token'] = $this->csrfProvider->generateCsrfToken($this->getConfiguration()->getCSRFIntention());
+
+        return $vars;
+    }
+
+    private function doDelete($entity)
+    {
+        if (!$this->getConfiguration()->getSecurityContext()->isActionAllowed(CRUDAction::DELETE, $entity)) {
+            throw new AccessDeniedException;
+        }
+        $this->getConfiguration()->getObjectManager()->remove($entity);
+    }
+
+    private function checkCSRFToken()
     {
         if (!$this->csrfProvider->isCsrfTokenValid($this->getConfiguration()->getCSRFIntention(), $this->getRequest()->get('_token'))) {
             throw new \Exception('Bad CSRF Token');
         }
     }
 
-    protected function getFormType($entity)
+    private function getFormType($entity)
     {
         $formType = $this->getConfiguration()->getFormType($entity);
         if (is_string($formType)) {
@@ -354,12 +386,13 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
 
         return $formType;
     }
-    protected function createCRUDForm($formType, $entity, array $options = array())
+    
+    private function createCRUDForm($formType, $entity, array $options = array())
     {
         return $this->formFactory->create($formType, $entity, $options);
     }
 
-    protected function render($template, $parameters, $response = null)
+    private function render($template, $parameters, $response = null)
     {
         if (is_null($response)) {
             $response = new Response;
@@ -369,4 +402,61 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
         return $response;
     }
 
+
+    private function findEntities($ids)
+    {
+        return $this->getConfiguration()->getObjectManager()->find($ids);
+    }
+
+    private function findEntity($id)
+    {
+        $entities = $this->findEntities($id);
+        if (!count($entities)) {
+            throw new NotFoundHttpException;
+        }
+
+        return $entities[0];
+    }
+
+    private function flushEntities()
+    {
+        $this->getConfiguration()->getObjectManager()->flush();
+    }
+
+
+    private function persistEntity($entity, $isNew = false)
+    {
+        $this->getConfiguration()->getObjectManager()->persist($entity);
+        $this->flushEntities();
+    }
+
+    private function createEntity(array $parameters=array())
+    {
+        return $this->getConfiguration()->getObjectManager()->create($parameters);
+    }
+    private function getFilterBuilder()
+    {
+        $filterType = $this->getConfiguration()->getFilterType();
+
+        return ($filterType)
+            ? $this->filterFactory->createFromType($this->getRequest()->getSession(), $filterType)
+            : null;
+
+    }
+    
+    private function getConfiguration()
+    {
+        return $this->CRUDRequest->getConfiguration();
+    }
+
+    private function getRequest()
+    {
+        return $this->CRUDRequest->getRequest();
+    }
+
+
+    private function getRedirectionManager()
+    {
+        return $this->CRUDRequest->getRedirectionManager();
+    }
 }

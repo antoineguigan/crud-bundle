@@ -66,20 +66,27 @@ class CRUDControllerTest extends \PHPUnit_Framework_TestCase
                 ->expects($this->once())
                 ->method('newAction')
                 ->will($this->returnValue('success'));
-        $this->assertEquals('success', $this->controller->newAction('default'));
+        $this->assertEquals('success', $this->controller->newAction());
     }
 
-    public function testBatchDeleteAction()
+    public function testBatchAction()
     {
         $worker = $this->setWorker();
         $worker
                 ->expects($this->once())
                 ->method('batchDeleteAction')
                 ->will($this->returnValue('success'));
-        $this->assertEquals('success', $this->controller->batchDeleteAction('default'));
-
+        $this->assertEquals('success', $this->controller->batchAction('delete'));
     }
 
+    /**
+     * @expectedException \RuntimeException
+     */
+    public function testUndefinedBatchAction()
+    {
+        $worker = $this->setWorker();
+        $this->controller->batchAction('bogus');
+    }
     public function testDeleteAction()
     {
         $worker = $this->setWorker();
