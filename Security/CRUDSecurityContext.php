@@ -12,10 +12,10 @@ namespace Qimnet\CRUDBundle\Security;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use Symfony\Component\Security\Core\SecurityContextInterface as SymfonySecurityContextInterface;
-use Qimnet\TableBundle\Table\Action;
-use Qimnet\TableBundle\Security\SecurityContextInterface;
+use Qimnet\CRUDBundle\Configuration\CRUDAction;
+use Qimnet\CRUDBundle\Security\CRUDSecurityContextInterface;
 
-class CRUDSecurityContext implements SecurityContextInterface
+class CRUDSecurityContext implements CRUDSecurityContextInterface
 {
     protected $security;
     public function __construct(SymfonySecurityContextInterface $security, array $options=array())
@@ -29,11 +29,11 @@ class CRUDSecurityContext implements SecurityContextInterface
     {
         $resolver->setDefaults(array(
             'credentials'=>array(
-                Action::CREATE => 'IS_AUTHENTICATED_ANONYMOUSLY',
-                Action::DELETE => 'IS_AUTHENTICATED_ANONYMOUSLY',
-                Action::SHOW => 'IS_AUTHENTICATED_ANONYMOUSLY',
-                Action::UPDATE => 'IS_AUTHENTICATED_ANONYMOUSLY',
-                Action::INDEX => 'IS_AUTHENTICATED_ANONYMOUSLY'
+                CRUDAction::CREATE => 'IS_AUTHENTICATED_ANONYMOUSLY',
+                CRUDAction::DELETE => 'IS_AUTHENTICATED_ANONYMOUSLY',
+                CRUDAction::SHOW => 'IS_AUTHENTICATED_ANONYMOUSLY',
+                CRUDAction::UPDATE => 'IS_AUTHENTICATED_ANONYMOUSLY',
+                CRUDAction::INDEX => 'IS_AUTHENTICATED_ANONYMOUSLY'
             )
         ));
     }

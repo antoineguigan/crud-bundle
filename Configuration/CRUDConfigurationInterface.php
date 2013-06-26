@@ -9,9 +9,9 @@
  */
 namespace Qimnet\CRUDBundle\Configuration;
 use Symfony\Component\HttpFoundation\Request;
-use Qimnet\TableBundle\Routing\PathGeneratorInterface;
+use Qimnet\CRUDBundle\Routing\CRUDPathGeneratorInterface;
 use Qimnet\CRUDBundle\Persistence\ObjectManagerInterface;
-use Qimnet\TableBundle\Security\SecurityContextInterface;
+use Qimnet\CRUDBundle\Security\CRUDSecurityContextInterface;
 
 /**
  * CRUD configuration class interface
@@ -126,7 +126,7 @@ interface CRUDConfigurationInterface
     /**
      * Returns the path generator used by CRUD actions and templates.
      *
-     * @return PathGeneratorInterface
+     * @return CRUDPathGeneratorInterface
      */
     public function getPathGenerator();
 
@@ -140,7 +140,7 @@ interface CRUDConfigurationInterface
     /**
      * Returns the CRUD security context used by CRUD actions and templates.
      *
-     * @return SecurityContextInterface
+     * @return CRUDSecurityContextInterface
      */
     public function getSecurityContext();
 
@@ -190,4 +190,10 @@ interface CRUDConfigurationInterface
      */
     public function getNewRouteParameterNames();
 
+    /**
+     * Returns the options for the rendererer of the headers of CRUD lists
+     * 
+     * @return array
+     */
+    public function getSortLinkRendererOptions();
 }

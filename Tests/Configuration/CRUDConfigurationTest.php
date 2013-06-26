@@ -9,7 +9,7 @@
  */
 namespace Qimnet\CRUDBundle\Tests\Configuration;
 
-use Qimnet\TableBundle\Table\Action;
+use Qimnet\CRUDBundle\Configuration\CRUDAction;
 use Qimnet\CRUDBundle\Configuration\CRUDConfiguration;
 
 class CRUDConfigurationTest extends \PHPUnit_Framework_TestCase
@@ -62,7 +62,7 @@ class CRUDConfigurationTest extends \PHPUnit_Framework_TestCase
 
     protected function getMockSecurityContext(array $options=array(), $class='')
     {
-        $securityContext = $this->getMock('Qimnet\TableBundle\Security\SecurityContextInterface');
+        $securityContext = $this->getMock('Qimnet\CRUDBundle\Security\CRUDSecurityContextInterface');
         $this->securityContextFactory
                 ->expects($this->once())
                 ->method('create')
@@ -167,55 +167,18 @@ class CRUDConfigurationTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('CRUDTest', $configuration->getName());
     }
 
-    public function getGetDefaultViewVarsData()
-    {
-        return array(
-            array(array()),
-            array(array('_inline'=>true),true),
-            array(array('_ajax_link'=>true),false, true),
-            array(array('_ajax_iframe'=>true),false, true),
-            array(array('_ajax_iframe'=>true, '_inline'=>false),false, true),
-            array(array('_ajax_iframe'=>true, '_inline'=>true),true, true,false)
-        );
-    }
-    /**
-     * @dataProvider getGetDefaultViewVarsData
-     */
-    public function testGetDefaultViewVars($parameters, $isInlineRequest=false, $isAjaxRequest=false, $indexAllowed=true)
+    public function testGetDefaultViewVars()
     {
         $configuration = $this->createConfiguration(array(
             'route_prefix'=>'route_prefix',
             'form_template'=>'form_template',
         ));
-        $securityContext = $this->getMockSecurityContext();
-        $securityContext
-                ->expects($this->once())
-                ->method('isActionAllowed')
-                ->with($this->equalTo(Action::INDEX))
-                ->will($this->returnValue($indexAllowed));
 
-        $request = $this->getMockRequest($parameters);
-
-        $pathGenerator = $this->getMockPathGenerator();
-
-        $pathGenerator
-                ->expects($this->any())
-                ->method('generate')
-                ->will($this->returnValueMap(array(
-                    array(Action::INDEX, array(), null, array(), 'index_path'),
-                    array(Action::CREATE, array(), null, array(), 'new_path')
-                )));
+        $request = $this->getMockRequest(array());
 
         $this->assertEquals(array(
                     'type_name'=>'CRUDTest',
                     'base_template'=>'base_template',
-                    'index_allowed'=>$indexAllowed,
-                    'route_prefix'=>'route_prefix',
-                    'route_parameters'=>array(
-                        'configName'=>'CRUDTest'
-                    ),
-                    'index_url'=>'index_path',
-                    'new_url'=>'new_path',
                     'form_template'=>'form_template',
                 ), $configuration->getDefaultViewVars($request));
     }
@@ -257,7 +220,7 @@ class CRUDConfigurationTest extends \PHPUnit_Framework_TestCase
     }
     protected function getMockPathGenerator()
     {
-        $pathGenerator = $this->getMock('Qimnet\TableBundle\Routing\PathGeneratorInterface');
+        $pathGenerator = $this->getMock('Qimnet\CRUDBundle\Routing\CRUDPathGeneratorInterface');
         $this->pathGeneratorFactory
                 ->expects($this->once())
                 ->method('create')

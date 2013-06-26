@@ -10,7 +10,7 @@
 namespace Qimnet\CRUDBundle\Tests\Routing;
 
 use Qimnet\CRUDBundle\Routing\CRUDPathGenerator;
-use Qimnet\TableBundle\Table\Action;
+use Qimnet\CRUDBundle\Configuration\CRUDAction;
 
 class CRUDPathGeneratorTest extends \PHPUnit_Framework_TestCase
 {
@@ -21,11 +21,11 @@ class CRUDPathGeneratorTest extends \PHPUnit_Framework_TestCase
     public function getGenerateData()
     {
         return array(
-            array(Action::CREATE),
-            array(Action::DELETE),
-            array(Action::INDEX),
-            array(Action::SHOW),
-            array(Action::UPDATE)
+            array(CRUDAction::CREATE),
+            array(CRUDAction::DELETE),
+            array(CRUDAction::INDEX),
+            array(CRUDAction::SHOW),
+            array(CRUDAction::UPDATE)
         );
     }
 
@@ -46,9 +46,9 @@ class CRUDPathGeneratorTest extends \PHPUnit_Framework_TestCase
             'configName'=>'config_name'
         );
         switch ($action) {
-            case Action::SHOW :
-            case Action::UPDATE :
-            case Action::DELETE :
+            case CRUDAction::SHOW :
+            case CRUDAction::UPDATE :
+            case CRUDAction::DELETE :
                 $this->propertyAccessor
                     ->expects($this->once())
                     ->method('getValue')
@@ -62,10 +62,10 @@ class CRUDPathGeneratorTest extends \PHPUnit_Framework_TestCase
                     ->method('getValue');
         }
         switch ($action) {
-            case Action::CREATE :
+            case CRUDAction::CREATE :
                 $actionName =  'new';
                 break;
-            case Action::UPDATE :
+            case CRUDAction::UPDATE :
                 $actionName = 'edit';
                 break;
             default :

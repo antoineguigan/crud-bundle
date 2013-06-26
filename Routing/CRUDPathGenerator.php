@@ -11,10 +11,9 @@ namespace Qimnet\CRUDBundle\Routing;
 
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Component\Routing\RouterInterface;
-use Qimnet\TableBundle\Table\Action;
-use Qimnet\TableBundle\Routing\PathGeneratorInterface;
+use Qimnet\CRUDBundle\Configuration\CRUDAction;
 
-class CRUDPathGenerator implements PathGeneratorInterface
+class CRUDPathGenerator implements CRUDPathGeneratorInterface
 {
     protected $router;
     protected $propertyAccessor;
@@ -22,12 +21,12 @@ class CRUDPathGenerator implements PathGeneratorInterface
     protected $configName;
     protected $idField;
     protected $path_suffixes = array(
-        Action::CREATE=>'new',
-        Action::DELETE=>'delete',
-        Action::INDEX=>'index',
-        Action::SHOW=>'show',
-        Action::UPDATE=>'edit',
-        Action::FILTER=>'filter'
+        CRUDAction::CREATE=>'new',
+        CRUDAction::DELETE=>'delete',
+        CRUDAction::INDEX=>'index',
+        CRUDAction::SHOW=>'show',
+        CRUDAction::UPDATE=>'edit',
+        CRUDAction::FILTER=>'filter'
     );
 
     public function __construct(RouterInterface $router,
@@ -46,9 +45,9 @@ class CRUDPathGenerator implements PathGeneratorInterface
     {
         $parameters['configName'] = $this->configName;
         switch ($action) {
-            case Action::SHOW :
-            case Action::UPDATE :
-            case Action::DELETE :
+            case CRUDAction::SHOW :
+            case CRUDAction::UPDATE :
+            case CRUDAction::DELETE :
                 $parameters['id'] = $this->propertyAccessor->getValue($object, $this->idField);
         }
 

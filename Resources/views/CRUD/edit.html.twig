@@ -4,7 +4,7 @@
     {% include form_template %}
 {% endblock %}
 {% block qimnet_crud_links %}{% spaceless %}
-    {% if index_allowed %}
-        <a href="{{ index_url }}">{% trans from "crud" %}Back to list{% endtrans %}</a>
+    {% if type_name is listable %}
+        <a href="{{ crud_path(type_name) }}">{% trans from "crud" %}Back to list{% endtrans %}</a>
     {% endif %}
 {% endspaceless %}{% endblock %}

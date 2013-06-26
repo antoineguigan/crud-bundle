@@ -3,10 +3,7 @@
 
 {% block qimnet_crud_content %}
     {% if pagination|length %}
-        <div class="qimnet-crud-index qimnet-crud" data-csrf-token="{{csrf_token}}"
-               data-route-prefix="{{route_prefix}}"
-               data-route-parameters="{{route_parameters|json_encode}}"
-               data-confirm-message="{% trans from "crud" %}Are you sure?{% endtrans %}">
+        <div class="qimnet-crud-index qimnet-crud" {% block qimnet_crud_index_attr %}data-csrf-token="{{csrf_token}}"{% endblock %}>
             <table>
                 <thead>
                     <tr>
@@ -14,7 +11,7 @@
                             <th class="qimnet-crud-checkbox"><input type="checkbox"></th>
                         {% endif %}
                         {% for column in table.columnNames %}
-                            <th>{{table.renderSortLink(column)|raw}}</th>
+                            <th>{{table.renderHeader(column)|raw}}</th>
                         {% endfor %}
                         <th></th>
                     </tr>
@@ -30,7 +27,7 @@
                         <tr class="{{cycle(['even', 'odd'], i)}}">
                             {% if batchActions|length > 0 %}
                                 <td class="qimnet-crud-checkbox">
-                                    {% if table.batchActionsAllowed(entity, objectVars) %}
+                                    {% if deletable(entity, objectVars) %}
                                         <input type="checkbox" value="{{entity.id}}">
                                     {% endif %}
                                 </td>
@@ -41,9 +38,9 @@
                                 </td>
                             {% endfor %}
                             <td class="qimnet-crud-row-actions">
-                                {% if table.deleteAllowed(entity, objectVars) %}
+                                {% if deletable(entity, objectVars) %}
                                     {% block qimnet_crud_row_delete %}
-                                        <a class="delete" href="{{table.getDeleteUrl(entity, objectVars)}}">{% trans from "crud" %}Delete{% endtrans %}</a>
+                                        <a class="delete" href="{{crud_path(entity, "delete", {}, objectVars)}}">{% trans from "crud" %}Delete{% endtrans %}</a>
                                     {% endblock %}
                                 {% endif %}
                             </td>
@@ -62,7 +59,7 @@
                 {% endif %}
             {% endblock %}
             {% block qimnet_crud_navigation %}
-                {{ sliding_pagination(pagination, route, routeParameters) }}
+                {{ sliding_pagination(pagination, route, route_parameters) }}
             {% endblock %}
         {% endblock %}
         </div>
@@ -73,9 +70,9 @@
 
 
 {% block qimnet_crud_links %}{% spaceless %}
-    {% if table.newAllowed %}
+    {% if type_name is creatable %}
         {% block qimnet_crud_link_new %}
-            <a href="{{ new_url }}">{% trans from "crud" %}Add a new record{% endtrans %}</a>
+            <a href="{{ crud_path(type_name, "create") }}">{% trans from "crud" %}Add a new record{% endtrans %}</a>
         {% endblock %}
     {% endif %}
 {% endspaceless %}{% endblock %}
@@ -83,7 +80,7 @@
 {% block qimnet_crud_filters %}
     {% if filters_form %}
         <div class="qimnet-crud-filters">
-            <form action="{{ filter_action }}" method="POST" >
+            <form action="{{ crud_path(type_name, "filter") }}" method="POST" >
                 <div class="qimnet-crud-filters-widgets">
                     {{form_widget(filters_form)}}
                 </div>

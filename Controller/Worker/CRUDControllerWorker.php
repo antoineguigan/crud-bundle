@@ -18,7 +18,7 @@ use Qimnet\PaginatorBundle\Paginator\PaginatorFactoryInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Templating\EngineInterface;
 use Symfony\Component\Form\Extension\Csrf\CsrfProvider\CsrfProviderInterface;
-use Qimnet\TableBundle\Table\Action;
+use Qimnet\CRUDBundle\Configuration\CRUDAction;
 use Symfony\Component\Form\FormRegistryInterface;
 use Qimnet\CRUDBundle\Filter\FilterFactoryInterface;
 use Qimnet\TableBundle\Table\TableBuilderFactoryInterface;
@@ -89,18 +89,16 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
     }
     public function indexAction($page = 1, $sortField = 'id', $sortDirection = 'desc')
     {
-        if (!$this->getConfiguration()->getSecurityContext()->isActionAllowed(Action::INDEX)) {
+        $configuration = $this->getConfiguration();
+        if (!$configuration->getSecurityContext()->isActionAllowed(CRUDAction::INDEX)) {
             throw new AccessDeniedException;
         }
         $table = $this->tableBuilderFactory
                 ->createFromType(
-                        $this->getConfiguration()->getTableType(), $this->getConfiguration()->getQueryAlias())
+                        $configuration->getTableType(), $configuration->getQueryAlias())
                 ->getTable();
 
-        $tableView = $table->createView(
-                $this->getConfiguration()->getPathGenerator(), $this->getConfiguration()->getSecurityContext(), $sortField, $sortDirection, $this->getConfiguration()->getShowTemplate() ? Action::SHOW : Action::UPDATE);
-
-        $data = $this->getConfiguration()
+        $data = $configuration
                 ->getObjectManager()
                 ->getIndexData($table->getColumnSort($sortField), $sortDirection);
 
@@ -110,26 +108,25 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
         }
 
         $pagination = $this->paginatorFactory->create(
-                $this->getConfiguration()->getPaginatorType(),
+                $configuration->getPaginatorType(),
                 $data,
                 $page,
-                $this->getConfiguration()->getPaginatorOptions());
+                $configuration->getPaginatorOptions());
 
         return $this->render(
-                        $this->getConfiguration()->getIndexTemplate(), array(
-                    'title' => $this->getConfiguration()->getIndexTitle(),
+                        $configuration->getIndexTemplate(), array(
+                    'title' => $configuration->getIndexTitle(),
                     'filters_form' => isset($filters) ? $filters->getForm()->createView() : null,
-                    'filter_action' => $this->getConfiguration()->getPathGenerator()->generate(Action::FILTER),
                     'pagination' => $pagination->createView(),
                     'route' => 'qimnet_crud_index',
-                    'routeParameters' => array(
-                        'configName' => $this->getConfiguration()->getName(),
+                    'route_parameters' => array(
+                        'configName' => $configuration->getName(),
                         'sortField' => $sortField,
                         'sortDirection' => $sortDirection
                     ),
-                    'table' => $tableView,
+                    'table' => $table->createView($configuration->getSortLinkRendererOptions()),
                     'batchActions' => $this->getBatchActions($pagination)
-                        ) + $this->getDefaultViewVars());
+                ) + $this->getDefaultViewVars());
     }
 
     protected function persistEntity($entity, $isNew = false)
@@ -145,7 +142,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
 
     public function newAction()
     {
-        if (!$this->getConfiguration()->getSecurityContext()->isActionAllowed(Action::CREATE)) {
+        if (!$this->getConfiguration()->getSecurityContext()->isActionAllowed(CRUDAction::CREATE)) {
             throw new AccessDeniedException;
         }
         $parameters = array();
@@ -170,7 +167,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
 
         return $this->render(
                         $this->getConfiguration()->getNewTemplate(), array(
-                    'action'=>  $this->getConfiguration()->getPathGenerator()->generate(Action::CREATE, $parameters),
+                    'action'=>  $this->getConfiguration()->getPathGenerator()->generate(CRUDAction::CREATE, $parameters),
                     'entity' => $entity,
                     'title' => $this->getConfiguration()->getNewTitle(),
                     'form' => $form->createView(),
@@ -239,7 +236,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
     public function editAction($id)
     {
         $entity = $this->findEntity($id);
-        if (!$this->getConfiguration()->getSecurityContext()->isActionAllowed(Action::UPDATE, $entity)) {
+        if (!$this->getConfiguration()->getSecurityContext()->isActionAllowed(CRUDAction::UPDATE, $entity)) {
             throw new AccessDeniedException;
         }
         $response = new Response;
@@ -261,14 +258,14 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
                     'title' => $this->getConfiguration()->getEditTitle(),
                     'form' => $form->createView(),
                     'form_type' => $formType->getName(),
-                    'action'=>  $this->getConfiguration()->getPathGenerator()->generate(Action::UPDATE,array(),$entity),
+                    'action'=>  $this->getConfiguration()->getPathGenerator()->generate(CRUDAction::UPDATE,array(),$entity),
                         ) + $this->getDefaultViewVars(), $response);
     }
 
     public function showAction($id)
     {
         $entity = $this->findEntity($id);
-        if (!$this->getConfiguration()->getSecurityContext()->isActionAllowed(Action::SHOW, $entity)) {
+        if (!$this->getConfiguration()->getSecurityContext()->isActionAllowed(CRUDAction::SHOW, $entity)) {
             throw new AccessDeniedException;
         }
 
@@ -281,7 +278,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
     public function formAction($entity = null)
     {
         if (!$this->getConfiguration()->getSecurityContext()->isActionAllowed(
-                        (is_null($entity) || $this->getConfiguration()->getObjectManager()->isNew($entity)) ? Action::CREATE : Action::UPDATE, $entity)) {
+                        (is_null($entity) || $this->getConfiguration()->getObjectManager()->isNew($entity)) ? CRUDAction::CREATE : CRUDAction::UPDATE, $entity)) {
             throw new AccessDeniedException;
         }
         if (is_null($entity)) {
@@ -293,9 +290,9 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
             'standalone' => false) + $this->getDefaultViewVars();
 
         if ($this->getConfiguration()->getObjectManager()->isNew($entity)) {
-            $params['action'] = $this->getConfiguration()->getPathGenerator()->generate(Action::CREATE, $params['route_parameters']);
+            $params['action'] = $this->getConfiguration()->getPathGenerator()->generate(CRUDAction::CREATE, $params['route_parameters']);
         } else {
-            $params['action'] = $this->getConfiguration()->getPathGenerator()->generate(Action::UPDATE, array(), $entity);
+            $params['action'] = $this->getConfiguration()->getPathGenerator()->generate(CRUDAction::UPDATE, array(), $entity);
         }
 
         return $this->render($this->getConfiguration()->getFormTemplate(), $params);
@@ -311,7 +308,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
 
     protected function doDelete($entity)
     {
-        if (!$this->getConfiguration()->getSecurityContext()->isActionAllowed(Action::DELETE, $entity)) {
+        if (!$this->getConfiguration()->getSecurityContext()->isActionAllowed(CRUDAction::DELETE, $entity)) {
             throw new AccessDeniedException;
         }
         $this->getConfiguration()->getObjectManager()->remove($entity);
@@ -327,7 +324,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
             } else {
                 $objectVars = array();
             }
-            if ($this->getConfiguration()->getSecurityContext()->isActionAllowed(Action::DELETE, $entity, $objectVars)) {
+            if ($this->getConfiguration()->getSecurityContext()->isActionAllowed(CRUDAction::DELETE, $entity, $objectVars)) {
                 $actions['batchdelete'] = 'Delete';
 
                 break;

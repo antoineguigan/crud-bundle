@@ -9,7 +9,7 @@
  */
 namespace Qimnet\CRUDBundle\Tests\Controller\Worker;
 use Qimnet\CRUDBundle\Controller\Worker\CRUDControllerWorker;
-use Qimnet\TableBundle\Table\Action;
+use Qimnet\CRUDBundle\Configuration\CRUDAction;
 
 class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
 {
@@ -77,7 +77,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
                 ->method('getCSRFIntention')
                 ->will($this->returnValue('csrf_intention'));
 
-        $this->pathGenerator = $this->getMock('Qimnet\TableBundle\Routing\PathGeneratorInterface');
+        $this->pathGenerator = $this->getMock('Qimnet\CRUDBundle\Routing\CRUDPathGeneratorInterface');
         $this->configuration
                 ->expects($this->any())
                 ->method('getPathGenerator')
@@ -89,7 +89,12 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
                 ->method('getObjectManager')
                 ->will($this->returnValue($this->objectManager));
 
-        $this->securityContext = $this->getMock('Qimnet\TableBundle\Security\SecurityContextInterface');
+        $this->configuration
+                ->expects($this->any())
+                ->method('getSortLinkRendererOptions')
+                ->will($this->returnValue(array()));
+        
+        $this->securityContext = $this->getMock('Qimnet\CRUDBundle\Security\CRUDSecurityContextInterface');
         $this->configuration
                 ->expects($this->any())
                 ->method('getSecurityContext')
@@ -120,7 +125,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
         $this->securityContext
                 ->expects($this->once())
                 ->method('isActionAllowed')
-                ->with($this->equalTo(Action::INDEX))
+                ->with($this->equalTo(CRUDAction::INDEX))
                 ->will($this->returnValue(false));
         $this->worker->indexAction();
     }
@@ -156,8 +161,8 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
                 ->expects($this->any())
                 ->method('isActionAllowed')
                 ->will($this->returnCallback(function($permission) use ($allowDelete) {
-                    return (($permission == Action::DELETE) && $allowDelete) ||
-                        ($permission == Action::INDEX);
+                    return (($permission == CRUDAction::DELETE) && $allowDelete) ||
+                        ($permission == CRUDAction::INDEX);
                 }));
         $paginatorOptions = array(
             'option1'=>'value1',
@@ -199,11 +204,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
         $table
                 ->expects($this->once())
                 ->method("createView")
-                ->with( $this->identicalTo($this->pathGenerator),
-                        $this->identicalTo($this->securityContext),
-                        $this->equalTo('sort_field'),
-                        $this->equalTo('sort_direction'),
-                        $this->equalTo($hasShow ? Action::SHOW : Action::UPDATE))
+                ->with($this->equalTo(array()))
                 ->will($this->returnValue('table'));
 
         $this->objectManager
@@ -285,7 +286,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
                                 'configName'=>'config_name',
                                 'sortField'=>'sort_field',
                                 'sortDirection'=>'sort_direction',
-                            ), $parameters['routeParameters']);
+                            ), $parameters['route_parameters']);
                             $testCase->assertEquals('table', $parameters['table']);
                             $testCase->assertEquals(
                                     $allowDelete ? array('batchdelete'=>'Delete') : array(),
@@ -324,7 +325,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
         $this->securityContext
                 ->expects($this->once())
                 ->method('isActionAllowed')
-                ->with($this->equalTo(Action::CREATE))
+                ->with($this->equalTo(CRUDAction::CREATE))
                 ->will($this->returnValue(false));
         $this->worker->newAction();
     }
@@ -348,7 +349,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
         $this->securityContext
                 ->expects($this->once())
                 ->method('isActionAllowed')
-                ->with($this->equalTo(Action::CREATE))
+                ->with($this->equalTo(CRUDAction::CREATE))
                 ->will($this->returnValue(true));
 
         $this->objectManager
@@ -401,7 +402,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
             $this->pathGenerator
                     ->expects($this->once())
                     ->method('generate')
-                    ->with($this->equalTo(Action::CREATE), $this->equalTo($routeParams))
+                    ->with($this->equalTo(CRUDAction::CREATE), $this->equalTo($routeParams))
                     ->will($this->returnValue('action'));
             $this->assertUnvalidPostResponse(
                     $entity, 'newAction',
@@ -538,7 +539,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
         $this->securityContext
                 ->expects($this->once())
                 ->method('isActionAllowed')
-                ->with($this->equalTo(Action::UPDATE))
+                ->with($this->equalTo(CRUDAction::UPDATE))
                 ->will($this->returnValue(false));
         $this->objectManager
                 ->expects($this->once())
@@ -568,7 +569,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
         $this->securityContext
                 ->expects($this->once())
                 ->method('isActionAllowed')
-                ->with($this->equalTo(Action::UPDATE))
+                ->with($this->equalTo(CRUDAction::UPDATE))
                 ->will($this->returnValue(true));
 
         $this->objectManager
@@ -603,7 +604,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
             $this->pathGenerator
                     ->expects($this->once())
                     ->method('generate')
-                    ->with($this->equalTo(Action::UPDATE), $this->equalTo(array()), $this->identicalTo($entity))
+                    ->with($this->equalTo(CRUDAction::UPDATE), $this->equalTo(array()), $this->identicalTo($entity))
                     ->will($this->returnValue('action'));
             $this->assertUnvalidPostResponse(
                     $entity, 'editAction',
@@ -631,7 +632,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
         $this->securityContext
                 ->expects($this->once())
                 ->method('isActionAllowed')
-                ->with($new ? Action::CREATE : Action::UPDATE)
+                ->with($new ? CRUDAction::CREATE : CRUDAction::UPDATE)
                 ->will($this->returnValue(true));
         $this->configuration
                 ->expects($this->once())
@@ -659,7 +660,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
                 ->expects($this->once())
                 ->method('generate')
                 ->with(
-                        $this->equalTo($new ? Action::CREATE : Action::UPDATE),
+                        $this->equalTo($new ? CRUDAction::CREATE : CRUDAction::UPDATE),
                         $this->equalTo($new ? $routeParameters : array()),
                         $this->identicalTo($new ? null : $entity))
                 ->will($this->returnValue('action'));
@@ -711,7 +712,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
         $this->securityContext
                 ->expects($this->once())
                 ->method('isActionAllowed')
-                ->with($this->equalTo(Action::DELETE))
+                ->with($this->equalTo(CRUDAction::DELETE))
                 ->will($this->returnValue(true));
 
         $this->csrfProvider
@@ -764,7 +765,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
         $this->securityContext
                 ->expects($this->once())
                 ->method('isActionAllowed')
-                ->with($this->equalTo(Action::DELETE))
+                ->with($this->equalTo(CRUDAction::DELETE))
                 ->will($this->returnValue(false));
 
         $this->csrfProvider
@@ -825,7 +826,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
         $this->securityContext
                 ->expects($this->any())
                 ->method('isActionAllowed')
-                ->with($this->equalTo(Action::DELETE))
+                ->with($this->equalTo(CRUDAction::DELETE))
                 ->will($this->returnValue(true));
 
         $this->csrfProvider
@@ -880,7 +881,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
         $this->securityContext
                 ->expects($this->any())
                 ->method('isActionAllowed')
-                ->with($this->equalTo(Action::DELETE))
+                ->with($this->equalTo(CRUDAction::DELETE))
                 ->will($this->returnValue(false));
 
         $entities = array(new \stdClass, new \stdClass);
@@ -982,7 +983,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
         $this->securityContext
                 ->expects($this->once())
                 ->method('isActionAllowed')
-                ->with($this->equalTo(Action::SHOW), $this->identicalTo($entity))
+                ->with($this->equalTo(CRUDAction::SHOW), $this->identicalTo($entity))
                 ->will($this->returnValue(true));
         $this->objectManager
                 ->expects($this->once())
@@ -1011,7 +1012,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
         $this->securityContext
                 ->expects($this->once())
                 ->method('isActionAllowed')
-                ->with($this->equalTo(Action::SHOW), $this->identicalTo($entity))
+                ->with($this->equalTo(CRUDAction::SHOW), $this->identicalTo($entity))
                 ->will($this->returnValue(false));
         $this->objectManager
                 ->expects($this->once())

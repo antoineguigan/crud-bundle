@@ -13,16 +13,18 @@ namespace Qimnet\CRUDBundle\Configuration;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Qimnet\TableBundle\Table\Action;
+use Qimnet\CRUDBundle\Configuration\CRUDAction;
 use Qimnet\CRUDBundle\Routing\CRUDPathGeneratorFactoryInterface;
 use Qimnet\CRUDBundle\Security\CRUDSecurityContextFactoryInterface;
 use Qimnet\CRUDBundle\Persistence\ObjectManagerFactoryInterface;
+use Qimnet\CRUDBundle\Routing\CRUDPathGeneratorInterface;
 
 /**
  * Contains the configuration for a CRUD instance
  *
  * Contains the configuration needed for the CRUDController. To see the default
- * configuration options, please see https://github.com/qimnet/crud-bundle/Resources/doc/index.rst
+ * configuration options, please see
+ * https://github.com/qimnet/crud-bundle/blob/master/Resources/doc/index.rst
  *
  */
 class CRUDConfiguration implements CRUDConfigurationInterface
@@ -109,90 +111,127 @@ class CRUDConfiguration implements CRUDConfigurationInterface
             'table_type'=>false,
             'filter_type'=>false,
             'filter_defaults'=>array(),
+            'sort_link_renderer_options'=>array('type'=>'sort_link'),
             'path_generator_class'=>'',
         ));
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getBaseTemplate()
     {
         return $this->options['base_template'];
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function getSortLinkRendererOptions()
+    {
+        return $this->options['sort_link_renderer_options'];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCSRFIntention()
     {
         return $this->options['csrf_intention'];
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getFormTemplate()
     {
         return $this->options['form_template'];
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getEditTemplate()
     {
         return $this->options['edit_template'];
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getEditTitle()
     {
         return $this->options['edit_title'];
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getIndexTemplate()
     {
         return $this->options['index_template'];
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getIndexTitle()
     {
         return $this->options['index_title'];
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getLimitPerPage()
     {
         return $this->options['limit_per_page'];
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getNewTemplate()
     {
         return $this->options['new_template'];
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getNewTitle()
     {
         return $this->options['new_title'];
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getName()
     {
         return $this->options['name'];
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getTableType()
     {
         return $this->options['table_type'];
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getDefaultViewVars(Request $request)
     {
         return array(
             'type_name' => $this->getName(),
             'base_template' => $this->options['base_template'],
-            'index_allowed' => $this->getSecurityContext()->isActionAllowed(Action::INDEX),
-            'route_prefix' => $this->options['route_prefix'],
-            'route_parameters' => $this->getRouteParameters(),
-            'index_url'=>  $this->getPathGenerator()->generate(Action::INDEX),
-            'new_url'=>  $this->getPathGenerator()->generate(Action::CREATE),
             'form_template' => $this->options['form_template'],
         );
     }
 
-    protected function getRouteParameters()
-    {
-        return array(
-            'configName' => $this->getName()
-        );
-    }
 
     /**
      * @inheritdoc
@@ -205,6 +244,11 @@ class CRUDConfiguration implements CRUDConfigurationInterface
 
         return $this->pathGenerator;
     }
+    /**
+     * Creates the path generator instance
+     * 
+     * @return CRUDPathGeneratorInterface
+     */
     protected function createPathGenerator()
     {
         return $this->pathGeneratorFactory->create(
@@ -214,11 +258,17 @@ class CRUDConfiguration implements CRUDConfigurationInterface
                 $this->options['path_generator_class']);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getShowTemplate()
     {
         return $this->options['show_template'];
     }
 
+    /**
+     * @inheritdoc
+     */
     final public function getObjectManager()
     {
         if (!isset($this->objectManager)) {

@@ -12,7 +12,7 @@ namespace Qimnet\CRUDBundle\Controller\RedirectionManager;
 use Qimnet\CRUDBundle\HTTP\CRUDRequestInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Translation\TranslatorInterface;
-use Qimnet\TableBundle\Table\Action;
+use Qimnet\CRUDBundle\Configuration\CRUDAction;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
@@ -63,7 +63,7 @@ class CRUDRedirectionManager  implements CRUDRedirectionManagerInterface
     }
     protected function getIndexRedirectResponse()
     {
-        return new RedirectResponse($this->CRUDRequest->getConfiguration()->getPathGenerator()->generate(Action::INDEX));
+        return new RedirectResponse($this->CRUDRequest->getConfiguration()->getPathGenerator()->generate(CRUDAction::INDEX));
     }
     protected function addFlash($text)
     {

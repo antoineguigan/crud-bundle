@@ -20,6 +20,8 @@
         <parameter key="qimnet.crud.object_manager.doctrine.default_class">Qimnet\CRUDBundle\Persistence\DoctrineEntityManager</parameter>
         <parameter key="qimnet.crud.path_generator.default_class">Qimnet\CRUDBundle\Routing\CRUDPathGenerator</parameter>
         <parameter key="qimnet.crud.security.default_class">Qimnet\CRUDBundle\Security\CRUDSecurityContext</parameter>
+        <parameter key="qimnet.table.renderer.crud_link.class">Qimnet\CRUDBundle\Table\CRUDLinkRendererStrategy</parameter>
+        <parameter key="qimnet.table.renderer.sort_link.class">Qimnet\CRUDBundle\Table\SortLinkRendererStrategy</parameter>
     </parameters>
 
     <services>
@@ -92,6 +94,22 @@
         <service id="qimnet.crud.twig_extensions" class="%qimnet.crud.twig_extensions.class%">
             <argument type="service" id="service_container" />
             <tag name="twig.extension"/>
+        </service>
+
+        <service id="qimnet.table.renderer.sort_link" class="%qimnet.table.renderer.sort_link.class%" >
+            <argument type="service" id="qimnet.table.renderer" />
+            <call method="setCRUDRequest">
+                <argument type="service" id="qimnet.crud.request" strict="false" on-invalid="null"/>
+            </call>
+            <tag name="qimnet.table.renderer"/>
+        </service>
+
+        <service id="qimnet.table.renderer.crud_link" class="%qimnet.table.renderer.crud_link.class%" >
+            <argument type="service" id="qimnet.table.renderer" />
+            <call method="setCRUDRequest">
+                <argument type="service" id="qimnet.crud.request" strict="false" on-invalid="null"/>
+            </call>
+            <tag name="qimnet.table.renderer"/>
         </service>
     </services>
 </container>
