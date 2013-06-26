@@ -53,7 +53,7 @@ qimnet_crud_edit:
     methods: [GET,POST]
 
 qimnet_crud_show:
-    path: %qimnet.crud.path_prefix%/{configName}/id
+    path: %qimnet.crud.path_prefix%/{configName}/{id}
     defaults:
-        _controller: qimnet.crud.controller.showAction
+        _controller: qimnet.crud.controller:showAction
     options: { expose: true }
