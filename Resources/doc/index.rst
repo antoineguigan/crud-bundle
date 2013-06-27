@@ -40,7 +40,8 @@ application kernel.
 
 Finally, add the CRUD controller to your routing
 
-.. code-block:: yml
+.. code-block:: yaml
+
     qimnet_crud:
         resource: "@QimnetCRUDBundle/Resources/config/routing.yml"
 
@@ -54,7 +55,8 @@ Configuration example
 The bundle automatically creates configuration services for all configured
 object classes. A configuration example could be the following :
 
-.. code-block:: yml
+.. code-block:: yaml
+
     qimnet_crud:
         defaults:
             options:
@@ -114,6 +116,7 @@ index_template
 
 show_template
   The twig template for the show action *(optional)*
+
 
 
 Security context options
