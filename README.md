@@ -1,5 +1,5 @@
-crud-bundle
-===========
+qimnet/crud-bundle
+==================
 
 RAD Bundle for Symfony
 
