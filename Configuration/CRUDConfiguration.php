@@ -331,6 +331,9 @@ class CRUDConfiguration implements CRUDConfigurationInterface
             'object_class',
         ));
         $resolver->setDefaults(array(
+            'form_type'=>false,
+            'table_type'=>false,
+            'filter_type'=>false,
             'edit_template' => 'QimnetCRUDBundle:CRUD:edit.html.twig',
             'new_template' => 'QimnetCRUDBundle:CRUD:new.html.twig',
             'base_template' => 'QimnetCRUDBundle::layout.html.twig',
@@ -351,9 +354,6 @@ class CRUDConfiguration implements CRUDConfigurationInterface
             'paginator_options'=>array(),
             'security_context_class'=>'',
             'security_context_options'=>array(),
-            'form_type'=>false,
-            'table_type'=>false,
-            'filter_type'=>false,
             'filter_defaults'=>array(),
             'sort_link_renderer_options'=>array('type'=>'sort_link'),
             'path_generator_class'=>'',
