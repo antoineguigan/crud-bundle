@@ -208,9 +208,9 @@ credentials:
     - index
 
 .. WARNING::
-    By default, credentials for all actions are set to
-    ``IS_AUTHENTICATED_ANONIMOUSLY``. To secure all actions, please give default
-    credentials equivalent to those given in the `Configuration example`_.
+   By default, credentials for all actions are set to
+   ``IS_AUTHENTICATED_ANONIMOUSLY``. To secure all actions, please give default
+   credentials equivalent to those given in the `Configuration example`_.
 
 
 
