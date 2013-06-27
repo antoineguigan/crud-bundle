@@ -218,9 +218,60 @@ credentials:
 Object manager options
 ----------------------
 
+For the moment, the only implemented object manager is the doctrine one. This
+object manager accepts the following options:
+
+query_builder_method:
+  The repository method used to create a query builder for the index page. This
+  method should receive the root entity alias as first argument.
+
+entity_alias:
+  The root entity alias for the index page query.
+
+id_column:
+  The name of the id column for the entity. *(automatically set by the default
+  Configuration implementation)*
+
+
 Table types
 -----------
 
+For the basics about creating table types, please read the `qimnet/table-bundle
+documentation
+<https://github.com/qimnet/table-bundle/blob/master/Resources/doc/index.rst>`_
+
+The CRUD bundle defines two more column rendering strategies :
+
+crud_link
+  creates a link towards the main action (edit or show depending on your
+  configuration).
+
+sort_link
+  used to render header sort links.
+
+A typical table type class might resemble this :
+
+.. code-block:: php
+
+    <?php
+
+    namespace ACME\WebsiteBundle\Table;
+
+    use Qimnet\TableBundle\Table\TableTypeInterface;
+    use Qimnet\TableBundle\Table\TableBuilderInterface;
+
+    class AdministratorType implements TableTypeInterface
+    {
+        public function buildTable(TableBuilderInterface $builder)
+        {
+            $builder
+                    ->add('id','crud_link')
+                    ->add('username','crud_link')
+                    ->add('date');
+        }
+    }
+
+    
 
 Filter types
 ------------
