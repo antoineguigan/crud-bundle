@@ -151,7 +151,7 @@ object_manager_class
   The class for the object manager instance
 
 object_manager_options
-  See the `Security context options`__.
+  See the `Object manager options`_.
 
 
 Security context options
