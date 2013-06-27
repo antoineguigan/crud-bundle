@@ -184,7 +184,7 @@ filter_defaults
 sort_link_renderer_options
   The options for the renderer of the sort links on the index page.
   Pleas read the  `qimnet/table-bundle documentation
-  <https://github.com/qimnet/table-bundle/blob/master/Resources/doc/index.rst>`
+  <https://github.com/qimnet/table-bundle/blob/master/Resources/doc/index.rst>`_
 
 path_generator_class
   The class for the path generator instance
