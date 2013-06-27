@@ -71,9 +71,13 @@ class DoctrineEntityManagerTest extends \PHPUnit_Framework_TestCase
                 ->method('query_builder_method')
                 ->will($this->returnValue($queryBuilder));
         $queryBuilder
+                ->expects($this->any())
+                ->method('getRootAlias')
+                ->will($this->returnValue('alias'));
+        $queryBuilder
                 ->expects($this->once())
                 ->method('orderBy')
-                ->with($this->equalTo('sort_column'), $this->equalTo('sort_direction'));
+                ->with($this->equalTo('alias.sort_column'), $this->equalTo('sort_direction'));
         $this->assertSame($queryBuilder,$manager->getIndexData('sort_column', 'sort_direction'));
     }
 

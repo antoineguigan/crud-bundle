@@ -176,7 +176,6 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
             'getTableType'=>'table_type',
             'getSortField'=>'sort_field',
             'getShowTemplate'=>$hasShow ? 'show_template' : '',
-            'getQueryAlias'=>'query_alias',
             'getPaginatorType'=>'paginator_type',
             'getPaginatorOptions'=>$paginatorOptions
         ));
@@ -186,8 +185,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
         $this->tableBuilderFactory
                 ->expects($this->once())
                 ->method("createFromType")
-                ->with( $this->equalTo('table_type'),
-                        $this->equalTo('query_alias'))
+                ->with( $this->equalTo('table_type'))
                 ->will($this->returnValue($tableBuilder));
 
         $tableBuilder
@@ -197,9 +195,15 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
 
         $table
                 ->expects($this->once())
-                ->method("getColumnSort")
+                ->method("has")
                 ->with($this->equalTo('sort_field'))
-                ->will($this->returnValue('sort_column'));
+                ->will($this->returnValue(true));
+        
+        $table
+                ->expects($this->once())
+                ->method("getOptions")
+                ->with($this->equalTo('sort_field'))
+                ->will($this->returnValue(array('sort'=>'sort_column')));
 
         $table
                 ->expects($this->once())

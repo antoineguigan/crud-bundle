@@ -253,14 +253,6 @@ class CRUDConfiguration implements CRUDConfigurationInterface
     /**
      * @inheritdoc
      */
-    public function getQueryAlias()
-    {
-        return $this->options['query_alias'];
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getFilterType()
     {
         return $this->options['filter_type'];
@@ -346,7 +338,6 @@ class CRUDConfiguration implements CRUDConfigurationInterface
             'show_template' => false,
             'index_template' => 'QimnetCRUDBundle:CRUD:index.html.twig',
             'route_prefix' => 'qimnet_crud',
-            'query_alias' => 't',
             'csrf_intention' => 'qimnet_crud',
             'edit_title' => 'Modifying %typeName% %entity%',
             'new_title' => 'New %typeName%',

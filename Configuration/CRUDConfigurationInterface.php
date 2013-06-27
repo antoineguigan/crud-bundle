@@ -117,13 +117,6 @@ interface CRUDConfigurationInterface
     public function getNewTitle();
 
     /**
-     * Returns the root alias for persistence layer queries
-     *
-     * @return string
-     */
-    public function getQueryAlias();
-
-    /**
      * Returns the path generator used by CRUD actions and templates.
      *
      * @return CRUDPathGeneratorInterface

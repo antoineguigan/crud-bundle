@@ -117,6 +117,8 @@ index_template
 show_template
   The twig template for the show action *(optional)*
 
+route_prefix
+  The prefix for crud route names
 
 
 Security context options

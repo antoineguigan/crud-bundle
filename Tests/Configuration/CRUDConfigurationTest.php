@@ -142,11 +142,6 @@ class CRUDConfigurationTest extends \PHPUnit_Framework_TestCase
         $this->assertOptionSet('filter_type', 'getFilterType');
     }
 
-    public function testGetQueryAlias()
-    {
-        $this->assertOptionSet('query_alias', 'getQueryAlias');
-    }
-
     public function testGetPaginatorOptions()
     {
         $this->assertOptionSet('paginator_options', 'getPaginatorOptions');

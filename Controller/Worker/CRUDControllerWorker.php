@@ -124,13 +124,20 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
             throw new AccessDeniedException;
         }
         $table = $this->tableBuilderFactory
-                ->createFromType(
-                        $configuration->getTableType(), $configuration->getQueryAlias())
+                ->createFromType($configuration->getTableType())
                 ->getTable();
-
+        if (!$table->has($sortField)) {
+            throw new NotFoundHttpException(sprintf('Column "%s" does not exist', $sortField));
+        }
+        $sortOptions = $table->getOptions($sortField);
+        if (isset($sortOptions['sort'])&& !$sortOptions['sort']) {
+            throw new NotFoundHttpException(sprintf('Column "%s" is not sortable', $sortField));
+        }
+        $sortColumn = isset($sortOptions['sort']) ? $sortOptions['sort'] : $sortField;
+        
         $data = $configuration
                 ->getObjectManager()
-                ->getIndexData($table->getColumnSort($sortField), $sortDirection);
+                ->getIndexData($sortColumn, $sortDirection);
 
         $filters = $this->getFilterBuilder();
         if (isset($filters)) {

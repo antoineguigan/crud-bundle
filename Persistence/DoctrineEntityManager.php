@@ -82,6 +82,9 @@ class DoctrineEntityManager implements ObjectManagerInterface
     public function getIndexData($sortColumn, $sortDirection)
     {
         $queryBuilder = call_user_func(array($this->getRepository(),  $this->options['query_builder_method']), $this->options['entity_alias']);
+        if (strpos('.',$sortColumn)===false) {
+            $sortColumn = $queryBuilder->getRootAlias() . '.' . $sortColumn;
+        }
         $queryBuilder->orderBy($sortColumn, $sortDirection);
 
         return $queryBuilder;
