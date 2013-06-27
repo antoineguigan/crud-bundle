@@ -277,9 +277,9 @@ class CRUDConfiguration implements CRUDConfigurationInterface
     /**
      * @inheritdoc
      */
-    public function getNewRouteParameterNames()
+    public function getObjectCreationParameters()
     {
-        return $this->options['new_route_parameter_names'];
+        return $this->options['object_creation_parameters'];
     }
 
     /**
@@ -335,16 +335,16 @@ class CRUDConfiguration implements CRUDConfigurationInterface
             'new_template' => 'QimnetCRUDBundle:CRUD:new.html.twig',
             'base_template' => 'QimnetCRUDBundle::layout.html.twig',
             'form_template' => 'QimnetCRUDBundle:CRUD:form.html.twig',
+            'edit_title' => 'Modifying %typeName% %entity%',
+            'new_title' => 'New %typeName%',
+            'index_title' => '%typeName% list',
             'show_template' => false,
             'index_template' => 'QimnetCRUDBundle:CRUD:index.html.twig',
             'route_prefix' => 'qimnet_crud',
             'csrf_intention' => 'qimnet_crud',
-            'edit_title' => 'Modifying %typeName% %entity%',
-            'new_title' => 'New %typeName%',
-            'index_title' => '%typeName% list',
             'id_column' => 'id',
             'limit_per_page' => 10,
-            'new_route_parameter_names'=>array(),
+            'object_creation_parameters'=>array(),
             'object_manager_class'=>'Qimnet\CRUDBundle\Persistence\DoctrineEntityManager',
             'object_manager_options'=>array(),
             'paginator_type'=>'doctrine',

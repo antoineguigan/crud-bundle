@@ -175,7 +175,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
             throw new AccessDeniedException;
         }
         $parameters = array();
-        foreach ($this->getConfiguration()->getNewRouteParameterNames() as $name) {
+        foreach ($this->getConfiguration()->getObjectCreationParameters() as $name) {
             if ($this->getRequest()->query->has($name)) {
                 $parameters[$name] = $this->getRequest()->query->get($name);
             }

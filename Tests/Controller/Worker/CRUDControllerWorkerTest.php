@@ -368,7 +368,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
 
         $this->configuration
                 ->expects($this->once())
-                ->method('getNewRouteParameterNames')
+                ->method('getObjectCreationParameters')
                 ->will($this->returnValue(array_keys($routeParams)));
 
         $this->request->query = $this->getMock('Symfony\Component\HttpFoundation\ParameterBag');

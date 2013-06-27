@@ -181,7 +181,7 @@ interface CRUDConfigurationInterface
      *
      * @return array
      */
-    public function getNewRouteParameterNames();
+    public function getObjectCreationParameters();
 
     /**
      * Returns the options for the rendererer of the headers of CRUD lists

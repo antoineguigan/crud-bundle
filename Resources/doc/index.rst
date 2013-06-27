@@ -99,30 +99,66 @@ Configuration options
 The following options are available with the default CRUDConfigurationInterface
 implementation:
 
+object_class:
+  The class of the managed objects. This option is **required**.
+
 base_template
-  The twig template from which all CRUD templates inherit
+  The twig template from which all CRUD templates inherit.
 
 edit_template
-  The twig template for the edit action
+  The twig template for the edit action.
 
 new_template
-  The twig template for the create action
+  The twig template for the create action.
 
 form_template
-  The form template included in the edit and create action templates
+  The form template included in the edit and create action templates.
 
 index_template
-  The twig template used for the index action
+  The twig template used for the index action.
 
 show_template
-  The twig template for the show action *(optional)*
+  The twig template for the show action. If left blank, the show action will
+  be deactivated.
+
+edit_title
+  The title of the edit page
+
+new_title
+  The title of the create page
+
+index_title
+  The title of the index page
+
+limit_per_page
+  The maximum number of objects displayed on the index page
 
 route_prefix
   The prefix for crud route names
 
+csrf_intention
+  The CSRF intention used to generate tokens for all forms and actions
+
+id_column
+  The name of the id column for the object
+
+object_creation_parameters
+  Contains an array of request arguments names for the create action. If
+  the corresponding request arguments exist, they will be set as properties
+  in the created object.
+
+object_manager_class
+  The class for the object manager instance
+
+object_manager_options
+  See the ``Security context options``__.
+
 
 Security context options
 ------------------------
+
+Object manager options
+----------------------
 
 Table types
 -----------
