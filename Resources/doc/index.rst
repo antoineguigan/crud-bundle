@@ -167,10 +167,12 @@ object_manager_options
   See the `Object manager options`_ section.
 
 paginator_type
-  The paginator type. See the `qimnet/paginator-bundle documentation<https://github.com/qimnet/paginator-bundle/blob/master/Resources/doc/index.rst>`.
+  The paginator type. See the `qimnet/paginator-bundle documentation
+  <https://github.com/qimnet/paginator-bundle/blob/master/Resources/doc/index.rst>`_.
 
 paginator_options
-  The default paginator options. See the `qimnet/paginator-bundle documentation<https://github.com/qimnet/paginator-bundle/blob/master/Resources/doc/index.rst>`.
+  The default paginator options. See the `qimnet/paginator-bundle documentation
+  <https://github.com/qimnet/paginator-bundle/blob/master/Resources/doc/index.rst>`_.
 
 security_context_class
   The class for the security context instance.
