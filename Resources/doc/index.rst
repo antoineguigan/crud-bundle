@@ -191,8 +191,28 @@ sort_link_renderer_options
 path_generator_class
   The class for the path generator instance
 
+
+
 Security context options
 ------------------------
+
+The default security context implementation allows the following option :
+
+credentials:
+  an array containing CRUD actions as keys and credentials as values. If a
+  no credential is set for a CRUD action, the corresponding action is
+  deactivated. The following actions can be used :
+    - create
+    - delete
+    - show
+    - index
+
+.. WARNING::
+   By default, credentials for all actions are set to
+  ``IS_AUTHENTICATED_ANONIMOUSLY``. To secure all actions, please give default
+  credentials equivalent to those given in the `Configuration example`_.
+
+
 
 Object manager options
 ----------------------
