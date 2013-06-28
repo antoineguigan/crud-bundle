@@ -20,7 +20,6 @@ use Symfony\Component\Templating\EngineInterface;
 use Symfony\Component\Form\Extension\Csrf\CsrfProvider\CsrfProviderInterface;
 use Qimnet\CRUDBundle\Configuration\CRUDAction;
 use Symfony\Component\Form\FormRegistryInterface;
-use Qimnet\CRUDBundle\Filter\FilterFactoryInterface;
 use Qimnet\TableBundle\Table\TableBuilderFactoryInterface;
 use Qimnet\CRUDBundle\Configuration\CRUDConfigurationInterface;
 use Qimnet\CRUDBundle\HTTP\CRUDRequestInterface;
@@ -66,11 +65,6 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
     protected $csrfProvider;
 
     /**
-     * @var FilterFactoryInterface
-     */
-    protected $filterFactory;
-
-    /**
      * @var PaginatorFactoryInterface
      */
     protected $paginatorFactory;
@@ -83,7 +77,6 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
      * @param EngineInterface                    $templating
      * @param TableBuilderFactoryInterface       $tableBuilderFactory
      * @param PaginatorFactoryInterface          $paginatorFactory
-     * @param FilterFactoryInterface             $filterFactory
      * @param CsrfProvider\CsrfProviderInterface $csrfProvider
      */
     public function __construct(
@@ -92,13 +85,11 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
             EngineInterface $templating,
             TableBuilderFactoryInterface $tableBuilderFactory,
             PaginatorFactoryInterface $paginatorFactory,
-            FilterFactoryInterface $filterFactory,
             CsrfProviderInterface $csrfProvider)
     {
         $this->formFactory = $formFactory;
         $this->formRegistry = $formRegistry;
         $this->templating = $templating;
-        $this->filterFactory = $filterFactory;
         $this->csrfProvider = $csrfProvider;
         $this->tableBuilderFactory = $tableBuilderFactory;
         $this->paginatorFactory = $paginatorFactory;
@@ -134,14 +125,16 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
             throw new NotFoundHttpException(sprintf('Column "%s" is not sortable', $sortField));
         }
         $sortColumn = isset($sortOptions['sort']) ? $sortOptions['sort'] : $sortField;
-        
-        $data = $configuration
-                ->getObjectManager()
-                ->getIndexData($sortColumn, $sortDirection);
 
-        $filters = $this->getFilterBuilder();
-        if (isset($filters)) {
-            $filters->setFilters($data);
+        $objectManager = $configuration->getObjectManager();
+        $data = $objectManager->getIndexData($sortColumn, $sortDirection);
+
+        if ($configuration->getFilterType()) {
+            $filtersForm = $this->getFiltersForm();
+            foreach($filtersForm as $column=>$field) {
+                $options = $field->getConfig()->getOptions();
+                $objectManager->filterIndexData($data, $column, $field->getData(), $options['filter_options']);
+            }
         }
 
         $pagination = $this->paginatorFactory->create(
@@ -153,7 +146,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
         return $this->render(
                         $configuration->getIndexTemplate(), array(
                     'title' => $configuration->getIndexTitle(),
-                    'filters_form' => isset($filters) ? $filters->getForm()->createView() : null,
+                    'filters_form' => isset($filtersForm) ? $filtersForm->createView() : null,
                     'pagination' => $pagination->createView(),
                     'route' => 'qimnet_crud_index',
                     'route_parameters' => array(
@@ -181,8 +174,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
             }
         }
         $entity = $this->createEntity($parameters);
-        $formType = $this->getFormType($entity);
-        $form = $this->createCRUDForm($formType, $entity);
+        $form = $this->getEntityForm($entity);
         $response = new Response;
         if ($this->getRequest()->isMethod('POST')) {
             $form->bind($this->getRequest());
@@ -200,8 +192,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
                     'entity' => $entity,
                     'title' => $this->getConfiguration()->getNewTitle(),
                     'form' => $form->createView(),
-                    'form_type' => $formType->getName()
-                        ) + $this->getDefaultViewVars(), $response);
+                ) + $this->getDefaultViewVars(), $response);
     }
 
     /**
@@ -240,13 +231,12 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
      */
     public function filterAction()
     {
-        $filter = $this->getFilterBuilder();
-        $form = $filter->getForm();
+        $form = $this->getFiltersForm();
         $form->bind($this->getRequest());
         if (!$form->isValid()) {
             throw new \Exception('Form is not valid!');
         }
-        $filter->setValues($form->getData());
+        $this->setFiltersData($form->getData());
 
         return $this->getRedirectionManager()->getFilterResponse();
     }
@@ -261,8 +251,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
             throw new AccessDeniedException;
         }
         $response = new Response;
-        $formType = $this->getFormType($entity);
-        $form = $this->createCRUDForm($formType, $entity);
+        $form = $this->getEntityForm($entity);
         if ($this->getRequest()->isMethod('POST')) {
             $form->bind($this->getRequest());
             if ($form->isValid()) {
@@ -278,7 +267,6 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
                     'entity' => $entity,
                     'title' => $this->getConfiguration()->getEditTitle(),
                     'form' => $form->createView(),
-                    'form_type' => $formType->getName(),
                     'action'=>  $this->getConfiguration()->getPathGenerator()->generate(CRUDAction::UPDATE,array(),$entity),
                         ) + $this->getDefaultViewVars(), $response);
     }
@@ -312,7 +300,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
             $entity = $this->createEntity();
         }
         $params = array(
-            'form' => $this->createCRUDForm($this->getFormType($entity), $entity)->createView(),
+            'form' => $this->getEntityForm($entity)->createView(),
             'entity' => $entity,
             'standalone' => false) + $this->getDefaultViewVars();
 
@@ -400,9 +388,16 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
         }
     }
 
-    private function getFormType($entity)
+    private function getEntityForm($entity)
     {
-        $formType = $this->getConfiguration()->getFormType($entity);
+        return $this->formFactory->create($this->getFormType($this->getConfiguration()->getFormType($entity)), $entity);
+    }
+    private function getFiltersForm()
+    {
+        return $this->formFactory->create($this->getFormType($this->getConfiguration()->getFilterType()), $this->getFiltersData());
+    }
+    private function getFormType($formType)
+    {
         if (is_string($formType)) {
             if ($this->formRegistry->hasType($formType)) {
                 $formType = $this->formRegistry->getType($formType);
@@ -412,11 +407,6 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
         }
 
         return $formType;
-    }
-
-    private function createCRUDForm($formType, $entity, array $options = array())
-    {
-        return $this->formFactory->create($formType, $entity, $options);
     }
 
     private function render($template, $parameters, $response = null)
@@ -459,16 +449,6 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
     {
         return $this->getConfiguration()->getObjectManager()->create($parameters);
     }
-    private function getFilterBuilder()
-    {
-        $filterType = $this->getConfiguration()->getFilterType();
-
-        return ($filterType)
-            ? $this->filterFactory->createFromType($this->getRequest()->getSession(), $filterType)
-            : null;
-
-    }
-
     private function getConfiguration()
     {
         return $this->CRUDRequest->getConfiguration();
@@ -482,5 +462,17 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
     private function getRedirectionManager()
     {
         return $this->CRUDRequest->getRedirectionManager();
+    }
+    private function getFiltersData()
+    {
+        return $this->getRequest()->getSession()->get($this->getFiltersSessionKey());
+    }
+    private function setFiltersData($data)
+    {
+        $this->getRequest()->getSession()->set($this->getFiltersSessionKey(), $data);
+    }
+    private function getFiltersSessionKey()
+    {
+        return sprintf('qimnet.crud.filter.%s', $this->getConfiguration()->getName());
     }
 }

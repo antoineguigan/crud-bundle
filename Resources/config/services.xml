@@ -12,8 +12,6 @@
         <parameter key="qimnet.crud.controller.class">Qimnet\CRUDBundle\Controller\CRUDController</parameter>
         <parameter key="qimnet.crud.path_generator.factory.class">Qimnet\CRUDBundle\Routing\CRUDPathGeneratorFactory</parameter>
         <parameter key="qimnet.crud.security.factory.class">Qimnet\CRUDBundle\Security\CRUDSecurityContextFactory</parameter>
-        <parameter key="qimnet.filter.factory.class">Qimnet\CRUDBundle\Filter\FilterFactory</parameter>
-        <parameter key="qimnet.filter.type.registry.class">Qimnet\CRUDBundle\Filter\FilterTypeRegistry</parameter>
         <parameter key="qimnet.crud.redirection_manager.class">Qimnet\CRUDBundle\Controller\RedirectionManager\CRUDRedirectionManager</parameter>
         <parameter key="qimnet.crud.request.class">Qimnet\CRUDBundle\HTTP\CRUDRequest</parameter>
         <parameter key="qimnet.crud.twig_extensions.class">Qimnet\CRUDBundle\Twig\Extensions</parameter>
@@ -22,6 +20,7 @@
         <parameter key="qimnet.crud.security.default_class">Qimnet\CRUDBundle\Security\CRUDSecurityContext</parameter>
         <parameter key="qimnet.table.renderer.crud_link.class">Qimnet\CRUDBundle\Table\CRUDLinkRendererStrategy</parameter>
         <parameter key="qimnet.table.renderer.sort_link.class">Qimnet\CRUDBundle\Table\SortLinkRendererStrategy</parameter>
+        <parameter key="qimnet.crud.type_extension.form.class">Qimnet\CRUDBundle\Form\FormTypeExtension</parameter>
     </parameters>
 
     <services>
@@ -49,7 +48,6 @@
             <argument type="service" id="templating" />
             <argument type="service" id="qimnet.table.builder.factory" />
             <argument type="service" id="qimnet.paginator.factory" />
-            <argument type="service" id="qimnet.filter.factory" />
             <argument type="service" id="form.csrf_provider" />
             <call method="setCRUDRequest">
                 <argument type="service" id="qimnet.crud.request" strict="false" on-invalid="null"/>
@@ -84,15 +82,6 @@
             <argument>%qimnet.crud.security.default_class%</argument>
         </service>
 
-       <service id="qimnet.filter.type.registry" class="%qimnet.filter.type.registry.class%">
-            <argument type="service" id="service_container" />
-        </service>
-
-        <service id="qimnet.filter.factory" class="%qimnet.filter.factory.class%">
-            <argument type="service" id="qimnet.filter.type.registry" />
-            <argument type="service" id="form.factory" />
-        </service>
-
         <service id="qimnet.crud.twig_extensions" class="%qimnet.crud.twig_extensions.class%">
             <argument type="service" id="service_container" />
             <tag name="twig.extension"/>
@@ -113,5 +102,10 @@
             </call>
             <tag name="qimnet.table.renderer"/>
         </service>
+
+        <service id="qimnet.crud.type_extension.form" class="%qimnet.crud.type_extension.form.class%">
+            <tag name="form.type_extension" alias="form"/>
+        </service>
+
     </services>
 </container>

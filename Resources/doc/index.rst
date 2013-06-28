@@ -180,9 +180,6 @@ security_context_class
 security_context_options
   See the `Security context options` section.
 
-filter_defaults
-  An array of default values for the filters.
-
 sort_link_renderer_options
   The options for the renderer of the sort links on the index page.
   Pleas read the  `qimnet/table-bundle documentation

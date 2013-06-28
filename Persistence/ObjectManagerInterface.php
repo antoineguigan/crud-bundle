@@ -20,6 +20,7 @@ interface ObjectManagerInterface
      * @param string $sortDirection
      */
     public function getIndexData($sortColumn, $sortDirection);
+    public function filterIndexData($data, $column, $value, array $options=array());
     public function persist($entity);
     public function flush();
     public function isNew($entity);

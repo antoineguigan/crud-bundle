@@ -21,7 +21,6 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
     protected $formRegistry;
     protected $templating;
     protected $csrfProvider;
-    protected $filterFactory;
     protected $paginatorFactory;
     protected $session;
 
@@ -102,8 +101,6 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
 
         $this->tableBuilderFactory = $this->getMock('Qimnet\TableBundle\Table\TableBuilderFactoryInterface');
 
-        $this->filterFactory = $this->getMock('Qimnet\CRUDBundle\Filter\FilterFactoryInterface');
-
         $this->paginatorFactory = $this->getMock('Qimnet\PaginatorBundle\Paginator\PaginatorFactoryInterface');
 
         $this->worker = new CRUDControllerWorker(
@@ -112,7 +109,6 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
                 $this->templating,
                 $this->tableBuilderFactory,
                 $this->paginatorFactory,
-                $this->filterFactory,
                 $this->csrfProvider);
         $this->worker->setCRUDRequest($this->crudRequest);
     }
@@ -255,8 +251,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
                     new \stdClass,
                     array(new \stdClass, 'key'=>'value')
                 )));
-        $filters = $this->setupFilters();
-        $form = $this->setupFiltersForm($filters);
+        $form = $this->setupFilters();
         $form
             ->expects($this->once())
             ->method('createView')
@@ -526,7 +521,6 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
                             $testCase->assertSame($entity, $parameters['entity']);
                             $testCase->assertEquals('form_view', $parameters['form']);
                             $testCase->assertEquals('action', $parameters['action']);
-                            $testCase->assertEquals('form_type', $parameters['form_type']);
 
                             return true;
                 }))
@@ -911,36 +905,34 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
     }
     protected function setupFilters()
     {
-        $filters = $this->getMock('Qimnet\CRUDBundle\Filter\FilterBuilderInterface');
+        $filters =  $this->getMockBuilder('Symfony\Component\Form\Form')
+                ->disableOriginalConstructor()
+                ->getMock();
+        $filters
+            ->expects($this->any())
+            ->method('getIterator')
+            ->will($this->returnValue(new \ArrayObject(array(
+            ))));
         $this->configuration
                 ->expects($this->any())
                 ->method('getFilterType')
                 ->will($this->returnValue('filter_type'));
-        $this->filterFactory
+        $this->formRegistry
+            ->expects($this->once())
+            ->method('hasType')
+            ->with($this->identicalTo('filter_type'))
+            ->will($this->returnValue(true));
+        $this->formFactory
                 ->expects($this->once())
-                ->method('createFromType')
-                ->with($this->equalTo($this->session), $this->equalTo('filter_type'))
+                ->method('create')
                 ->will($this->returnValue($filters));
 
         return $filters;
     }
-    protected function setupFiltersForm($filters)
-    {
-        $form = $this->getMockBuilder('Symfony\Component\Form\Form')
-                ->disableOriginalConstructor()
-                ->getMock();
-        $filters
-                ->expects($this->once())
-                ->method('getForm')
-                ->will($this->returnValue($form));
-
-        return $form;
-    }
 
     public function testFilterAction()
     {
-        $filters = $this->setupFilters();
-        $form = $this->setupFiltersForm($filters);
+        $form = $this->setupFilters();
         $form
                 ->expects($this->once())
                 ->method('bind')
@@ -953,10 +945,6 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
                 ->expects($this->once())
                 ->method('getData')
                 ->will($this->returnValue('form_data'));
-        $filters
-                ->expects($this->once())
-                ->method('setValues')
-                ->with($this->equalTo('form_data'));
         $this->redirectionManager
                 ->expects($this->once())
                 ->method('getFilterResponse')
@@ -969,8 +957,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
      */
     public function testFiltersUnvalid()
     {
-        $filters = $this->setupFilters();
-        $form = $this->setupFiltersForm($filters);
+        $form = $this->setupFilters();
         $form
                 ->expects($this->once())
                 ->method('bind')

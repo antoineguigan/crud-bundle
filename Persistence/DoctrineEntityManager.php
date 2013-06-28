@@ -104,4 +104,20 @@ class DoctrineEntityManager implements ObjectManagerInterface
     {
         return is_null($this->propertyAccessor->getValue($entity, $this->options['id_column']));
     }
+
+    public function filterIndexData($data, $column, $value, array $options = array())
+    {
+        if (isset($options['column_name'])) {
+            $column = $options['column_name'];
+        }
+        if (isset($options['callback'])) {
+            call_user_func($options['callback'], $data, $column, $value, $options);
+        } elseif ($value !== '') {
+            if (strpos($column,'.')===false) {
+                $column = sprintf('%s.%s', $data->getRootAlias(), $column);
+            }
+            $data->andWhere("$column = :value")
+                    ->setParameter('value', $value);
+        }
+    }
 }

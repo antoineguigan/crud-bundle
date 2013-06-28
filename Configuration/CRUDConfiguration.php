@@ -354,7 +354,6 @@ class CRUDConfiguration implements CRUDConfigurationInterface
             'paginator_options'=>array(),
             'security_context_class'=>'',
             'security_context_options'=>array(),
-            'filter_defaults'=>array(),
             'sort_link_renderer_options'=>array('type'=>'sort_link'),
             'path_generator_class'=>'',
         ));
