@@ -129,10 +129,10 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
     public function getIndexActionData()
     {
         return array(
-            array(1,1, true, false),
-            array(7,20,true, false),
-            array(44,50,true, true),
-            array(49,50, false, false),
+            array(1,1, true, false,true),
+            array(7,20,true, false,false),
+            array(44,50,true, true,false),
+            array(49,50, false, false,false),
         );
     }
 
@@ -147,7 +147,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider getIndexActionData
      */
-    public function testIndexAction($page, $lastPage, $allowDelete, $hasShow)
+    public function testIndexAction($page, $lastPage, $allowDelete, $hasShow, $useObjectVars)
     {
         $testCase = $this;
 
@@ -244,18 +244,58 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
                 ->method('getAdapter')
                 ->will($this->returnValue($paginatorAdapter));
 
+        $pageData = $useObjectVars
+                ? array(
+                    array(new \stdClass,array('obj_key'=>'value')),
+                    array(new \stdClass,array('obj_key'=>'value'))
+                )
+                : array(
+                    new \stdClass,
+                    new \stdClass
+                );
         $paginatorAdapter
                 ->expects($this->any())
                 ->method('getIterator')
-                ->will($this->returnValue(array(
-                    new \stdClass,
-                    array(new \stdClass, 'key'=>'value')
-                )));
-        $form = $this->setupFilters();
-        $form
+                ->will($this->returnValue($pageData));
+        $filters = $this->setupFilters();
+        $filters
             ->expects($this->once())
             ->method('createView')
             ->will($this->returnValue('form_view'));
+        $field = $this->getMockBuilder('Symfony\Component\Form\Form')
+                ->disableOriginalConstructor()
+                ->getMock();
+        $fieldConfig = $this->getMock('Symfony\Component\Form\FormConfigInterface');
+        $field
+                ->expects($this->once())
+                ->method('getConfig')
+                ->will($this->returnValue($fieldConfig));
+        $field
+                ->expects($this->once())
+                ->method('getData')
+                ->will($this->returnValue('filter_value'));
+
+        $filterOptions = array('filterkey1'=>'value1');
+        $fieldConfig
+                ->expects($this->once())
+                ->method('getOptions')
+                ->will($this->returnValue(array(
+                    'filter_options'=>$filterOptions
+                )));
+        $filters
+            ->expects($this->any())
+            ->method('getIterator')
+            ->will($this->returnValue(new \ArrayObject(array(
+                'field1'=>$field
+            ))));
+        $this->objectManager
+                ->expects($this->once())
+                ->method('filterIndexData')
+                ->with($this->equalTo($data),
+                        $this->equalTo('field1'),
+                        $this->equalTo('filter_value'),
+                        $this->equalTo($filterOptions));
+
 
         $this->configuration
                 ->expects($this->once())
@@ -297,6 +337,65 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
 
         $response = $this->worker->indexAction($page, 'sort_field', 'sort_direction');
         $this->assertEquals($response->getContent(), 'response_content');
+    }
+    /**
+     * @expectedException Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     */
+    public function testIndexActionWithUnexistingColumn()
+    {
+        $this->securityContext
+                ->expects($this->once())
+                ->method('isActionAllowed')
+                ->will($this->returnValue(true));
+
+        $tableBuilder = $this->getMock('Qimnet\TableBundle\Table\TableBuilderInterface');
+        $this->tableBuilderFactory
+                ->expects($this->once())
+                ->method('createFromType')
+                ->will($this->returnValue($tableBuilder));
+
+        $table = $this->getMock('Qimnet\TableBundle\Table\TableInterface');
+        $tableBuilder
+                ->expects($this->once())
+                ->method('getTable')
+                    ->will($this->returnValue($table));
+        $table
+                ->expects($this->once())
+                ->method('has')
+                ->will($this->returnValue(false));
+        $this->worker->indexAction();
+    }
+    /**
+     * @expectedException Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     */
+    public function testIndexActionWithUnsortableColumn()
+    {
+        $this->securityContext
+                ->expects($this->once())
+                ->method('isActionAllowed')
+                ->will($this->returnValue(true));
+
+        $tableBuilder = $this->getMock('Qimnet\TableBundle\Table\TableBuilderInterface');
+        $this->tableBuilderFactory
+                ->expects($this->once())
+                ->method('createFromType')
+                ->will($this->returnValue($tableBuilder));
+
+        $table = $this->getMock('Qimnet\TableBundle\Table\TableInterface');
+        $tableBuilder
+                ->expects($this->once())
+                ->method('getTable')
+                    ->will($this->returnValue($table));
+        $table
+                ->expects($this->once())
+                ->method('has')
+                ->will($this->returnValue(true));
+
+        $table
+                ->expects($this->once())
+                ->method('getOptions')
+                ->will($this->returnValue(array('sort'=>false)));
+        $this->worker->indexAction();
     }
     protected function setupViewVars()
     {
@@ -908,11 +1007,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
         $filters =  $this->getMockBuilder('Symfony\Component\Form\Form')
                 ->disableOriginalConstructor()
                 ->getMock();
-        $filters
-            ->expects($this->any())
-            ->method('getIterator')
-            ->will($this->returnValue(new \ArrayObject(array(
-            ))));
+
         $this->configuration
                 ->expects($this->any())
                 ->method('getFilterType')

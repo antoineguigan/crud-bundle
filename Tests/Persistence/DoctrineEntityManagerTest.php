@@ -138,6 +138,45 @@ class DoctrineEntityManagerTest extends \PHPUnit_Framework_TestCase
         $mockClass = $this->getMockClass('\StdClass');
         $manager = $this->createManager(array(
                 'class'=>$mockClass));
-        $this->assertInstanceOf($mockClass, $manager->create());
+        $this->propertyAccessor
+                ->expects($this->once())
+                ->method('setValue')
+                ->with($this->isInstanceOf($mockClass), $this->equalTo('key1'), $this->equalTo('value1'));
+        $this->assertInstanceOf($mockClass, $manager->create(array(
+            'key1'=>'value1'
+        )));
+    }
+    public function getTestFilterIndexData() {
+        return array(
+            array('column', 'alias.column'),
+            array('t.column', 't.column'),
+            array('column', 't.column', array('column_name'=>'t.column')),
+            array('column', 't.column', array('callback'=>function($queryBuilder){
+                $queryBuilder->andWhere('t.column')
+                        ->setParameter('name', 'value');
+            }))
+        );
+    }
+    /**
+     * @dataProvider getTestFilterIndexData
+     */
+    public function testFilterIndexData($fieldName, $columnName, $options=array()) {
+        $data = $this->getMockBuilder('Doctrine\ORM\QueryBuilder')
+                ->disableOriginalConstructor()
+                ->getMock();
+        $data->expects($this->once())
+                ->method('andWhere')
+                ->with($this->matchesRegularExpression("/$columnName/"))
+                ->will($this->returnValue($data));
+        $data->expects($this->any())
+                ->method('getRootAlias')
+                ->with()
+                ->will($this->returnValue('alias'));
+        $data->expects($this->once())
+                ->method('setParameter')
+                ->with($this->anything(),'value')
+                ->will($this->returnValue($data));
+        $manager = $this->createManager();
+        $manager->filterIndexData($data, $fieldName, 'value', $options);
     }
 }

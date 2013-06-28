@@ -101,7 +101,10 @@ class CRUDConfigurationTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertOptionSet('show_template', 'getShowTemplate');
     }
-
+    public function testGetSortLinkRendererOptions()
+    {
+        $this->assertOptionSet('sort_link_renderer_options', 'getSortLinkRendererOptions');
+    }
     public function testGetEditTitle()
     {
         $this->assertOptionSet('edit_title', 'getEditTitle');
@@ -150,6 +153,10 @@ class CRUDConfigurationTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertOptionSet('paginator_type', 'getPaginatorType');
     }
+    public function testGetObjectCreationParameters()
+    {
+        $this->assertOptionSet('object_creation_parameters', 'getObjectCreationParameters');
+    }
     public function testGetTableType()
     {
         $this->assertOptionSet('table_type', 'getTableType');
@@ -197,6 +204,43 @@ class CRUDConfigurationTest extends \PHPUnit_Framework_TestCase
                 )), $this->equalTo('object_manager_class'))
                 ->will($this->returnValue('success'));
         $this->assertEquals('success', $configuration->getObjectManager());
+    }
+    public function testGetSecurityContext()
+    {
+        $securityContextOptions = array(
+            'key1'=>'value1',
+            'key2'=>'value2'
+        );
+        $configuration = $this->createConfiguration(array(
+            'security_context_options'=>$securityContextOptions,
+            'security_context_class'=>'security_context_class'
+        ));
+        $this->securityContextFactory
+                ->expects($this->once())
+                ->method('create')
+                ->with($this->equalTo($securityContextOptions), $this->equalTo('security_context_class'))
+                ->will($this->returnValue('success'));
+        $this->assertEquals('success', $configuration->getSecurityContext());
+        $configuration->getSecurityContext();
+    }
+
+    public function testGetPathGenerator()
+    {
+        $configuration = $this->createConfiguration(array(
+            'route_prefix'=>  'route_prefix',
+            'id_column'=>'id_column',
+            'path_generator_class'=>'path_generator_class'
+        ));
+        $this->pathGeneratorFactory
+                ->expects($this->once())
+                ->method('create')
+                ->with($this->equalTo('route_prefix'),
+                        $this->equalTo('CRUDTest'),
+                        $this->equalTo('id_column'),
+                        $this->equalTo('path_generator_class'))
+                ->will($this->returnValue('success'));
+        $this->assertEquals('success', $configuration->getPathGenerator());
+        $configuration->getPathGenerator();
     }
     protected function getMockRequest($parameters)
     {
