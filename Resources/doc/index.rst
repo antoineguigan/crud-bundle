@@ -272,3 +272,61 @@ A typical table type class might resemble this :
 
 Filter types
 ------------
+
+Filter types are standard Symfony form types. The CRUD bundle adds an extra
+``filter_options`` to all form types, which can be used by the entity manager
+to filter the index results.
+
+The following options are used by the included doctrine entity manager :
+
+column_name
+  the column the entity should be filtered upon.
+
+callback
+  a callback function used to filter the query. The callback should have the
+  following signature :
+
+    .. code-block:: php
+
+        function($queryBuilder, $columnName, $value, $filterOptions) { }
+
+
+A typical filter type could look this way :
+
+.. code-block:: php
+
+    <?php
+    namespace QCME\BackendBundle\Filter;
+
+    use Symfony\Component\Form\AbstractType;
+    use Symfony\Component\Form\FormBuilderInterface;
+
+    class LocaleType extends AbstractType
+    {
+        public function buildForm(FormBuilderInterface $builder, array $options)
+        {
+            $builder
+                    ->add('key1', 'choice', array(
+                        'choices'=>array(''=>'', '0'=>'val0','1'=>'val1')
+                    ))
+                    ->add('key2', 'choice', array(
+                        'choices'=>array(''=>'', '0'=>'val0','1'=>'val1'),
+                        'filter_options'=>array(
+                            'callback'=>function($queryBuilder, $column,
+                                                 $value, $options) {
+                                $queryBuilder
+                                    ->andWhere('t2.key1 > :filter_value')
+                                    ->setParameter('filter_value', $value);
+                            }
+                        )
+                    ));
+        }
+        public function getName()
+        {
+            return 'locale';
+        }
+        public function getParent()
+        {
+            return 'form';
+        }
+    }
