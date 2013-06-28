@@ -296,12 +296,12 @@ A typical filter type could look this way :
 .. code-block:: php
 
     <?php
-    namespace QCME\BackendBundle\Filter;
+    namespace ACME\BackendBundle\Filter;
 
     use Symfony\Component\Form\AbstractType;
     use Symfony\Component\Form\FormBuilderInterface;
 
-    class LocaleType extends AbstractType
+    class MyFilterType extends AbstractType
     {
         public function buildForm(FormBuilderInterface $builder, array $options)
         {
@@ -327,6 +327,6 @@ A typical filter type could look this way :
         }
         public function getParent()
         {
-            return 'form';
+            return 'my_filter';
         }
     }

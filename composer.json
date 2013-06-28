@@ -2,7 +2,7 @@
     "name": "qimnet/crud-bundle",
     "type": "symfony-bundle",
     "description": "QIMNET CRUD bundle (alpha)",
-    "keywords": ["CRUD"],
+    "keywords": ["CRUD", "RAD"],
     "homepage": "http://qimnet.com",
     "license": "MIT",
     "authors": [
