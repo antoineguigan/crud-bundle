@@ -146,7 +146,8 @@ class DoctrineEntityManagerTest extends \PHPUnit_Framework_TestCase
             'key1'=>'value1'
         )));
     }
-    public function getTestFilterIndexData() {
+    public function getTestFilterIndexData()
+    {
         return array(
             array('column', 'alias.column'),
             array('t.column', 't.column'),
@@ -160,7 +161,8 @@ class DoctrineEntityManagerTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider getTestFilterIndexData
      */
-    public function testFilterIndexData($fieldName, $columnName, $options=array()) {
+    public function testFilterIndexData($fieldName, $columnName, $options=array())
+    {
         $data = $this->getMockBuilder('Doctrine\ORM\QueryBuilder')
                 ->disableOriginalConstructor()
                 ->getMock();

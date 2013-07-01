@@ -103,7 +103,7 @@ class CRUDConfigurationCompilerPassTest extends \PHPUnit_Framework_TestCase
                 ->method('getDefinition')
                 ->with($this->equalTo('qimnet.crud.configuration.repository'))
                 ->will($this->returnValue($repositoryDefinition));
-        
+
         $repositoryDefinition
                 ->expects($this->once())
                 ->method('addMethodCall')

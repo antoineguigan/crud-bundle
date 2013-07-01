@@ -100,7 +100,7 @@ class CRUDRedirectionManager  implements CRUDRedirectionManagerInterface
     {
         return new RedirectResponse($this->CRUDRequest->getConfiguration()->getPathGenerator()->generate(CRUDAction::INDEX));
     }
-    
+
     private function addFlash($text)
     {
         $this->CRUDRequest->getRequest()->getSession()->getFlashBag()->add('notice', $text);

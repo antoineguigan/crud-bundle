@@ -97,7 +97,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
 
     /**
      * Sets the current CRUD request
-     * 
+     *
      * @param CRUDRequestInterface $CRUDRequest
      */
     public function setCRUDRequest(CRUDRequestInterface $CRUDRequest=null)
@@ -131,7 +131,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
 
         if ($configuration->getFilterType()) {
             $filtersForm = $this->getFiltersForm();
-            foreach($filtersForm as $column=>$field) {
+            foreach ($filtersForm as $column=>$field) {
                 $options = $field->getConfig()->getOptions();
                 $objectManager->filterIndexData($data, $column, $field->getData(), $options['filter_options']);
             }
@@ -346,7 +346,7 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
             } else {
                 $objectVars = array();
             }
-            foreach($availableBatchActions as $actionName=>$actionLabel) {
+            foreach ($availableBatchActions as $actionName=>$actionLabel) {
                 if ($security->isActionAllowed($actionName, $entity, $objectVars)) {
                     $allowedBatchActions[$actionName] = $actionLabel;
                     unset($availableBatchActions[$actionName]);
@@ -357,14 +357,15 @@ class CRUDControllerWorker implements CRUDControllerWorkerInterface
                 break;
             }
         }
-        foreach($batchActionKeys as $actionName) {
+        foreach ($batchActionKeys as $actionName) {
             if (isset($allowedBatchActions[$actionName])) {
                 $batchActions[$actionName] = $allowedBatchActions[$actionName];
             }
         }
+
         return $batchActions;
     }
-    
+
     private function getDefaultViewVars()
     {
         $vars = $this->getConfiguration()->getDefaultViewVars($this->getRequest());

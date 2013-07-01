@@ -194,7 +194,7 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
                 ->method("has")
                 ->with($this->equalTo('sort_field'))
                 ->will($this->returnValue(true));
-        
+
         $table
                 ->expects($this->once())
                 ->method("getOptions")
@@ -295,7 +295,6 @@ class CRUDControllerWorkerTest extends \PHPUnit_Framework_TestCase
                         $this->equalTo('field1'),
                         $this->equalTo('filter_value'),
                         $this->equalTo($filterOptions));
-
 
         $this->configuration
                 ->expects($this->once())

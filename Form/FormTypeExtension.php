@@ -10,18 +10,27 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
  */
 
 /**
- * Description of FormTypeExtension
+ * Adds the 'filter_options' option to all field types.
+ *
+ * The filter_options option are used by the entity manager to filter the
+ * results of the index page
  *
  * @author Antoine Guigan <aguigan@qimnet.com>
  */
 class FormTypeExtension extends AbstractTypeExtension
 {
 
+    /**
+     * @inheritdoc
+     */
     public function getExtendedType()
     {
         return 'form';
     }
 
+    /**
+     * @inheritdoc
+     */
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(array(

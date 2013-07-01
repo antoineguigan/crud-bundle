@@ -8,7 +8,6 @@
 
 namespace Qimnet\CRUDBundle\Tests\Table;
 use Qimnet\CRUDBundle\Table\CRUDLinkRendererStrategy;
-use Qimnet\CRUDBundle\Configuration\CRUDAction;
 
 /**
  * Description of CRUDLinkRendererStrategyTest
@@ -44,7 +43,8 @@ class CRUDLinkRendererStrategyTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($this->rendererStrategy->getPriority());
     }
 
-    public function getTestRenderData() {
+    public function getTestRenderData()
+    {
         return array(
             array(array(),array(),false,false),
             array(array(),array(),true,false),
@@ -76,7 +76,7 @@ class CRUDLinkRendererStrategyTest extends \PHPUnit_Framework_TestCase
                 ->will($this->returnValue($securityContext));
         $securityContext->expects($this->any())
                 ->method('isActionAllowed')
-                ->will($this->returnCallback(function($action) use($allowedActions){
+                ->will($this->returnCallback(function($action) use ($allowedActions) {
                     return in_array($action, $allowedActions);
                 }));
         $configuration->expects($this->any())

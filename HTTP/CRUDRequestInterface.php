@@ -13,24 +13,35 @@ use Qimnet\CRUDBundle\Controller\RedirectionManager\CRUDRedirectionManagerInterf
  */
 
 /**
+ * Interface used to get the CRUD configuration corresponding to the current
+ * request.
+ *
  * @author Antoine Guigan <aguigan@qimnet.com>
  */
 interface CRUDRequestInterface
 {
     /**
+     * Returns the CRUD configuration for the current request
+     *
      * @return CRUDConfigurationInterface
      */
     public function getConfiguration();
     /**
+     * Returns the HTTP Request
+     *
      * @return Request
      */
     public function getRequest();
     /**
+     * Returns the CRUD worker for the current request
+     *
      * @return CRUDControllerWorkerInterface
      */
     public function getWorker();
 
     /**
+     * Returns the CRUD redirection manager for the current request
+     *
      * @return CRUDRedirectionManagerInterface
      */
     public function getRedirectionManager();

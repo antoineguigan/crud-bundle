@@ -11,15 +11,25 @@ use Symfony\Component\HttpFoundation\Request;
  */
 
 /**
- * Description of CRUDRequest
+ * Base implementation for the qimnet.crud.request service
+ *
+ * The qimnet.crud.request service is a synchronized service giving access to
+ * the current CRUD configuration.
  *
  * @author Antoine Guigan <aguigan@qimnet.com>
  */
 class CRUDRequest implements CRUDRequestInterface
 {
-    protected $request;
-    protected $configurationRepository;
+    private $request;
+    private $configurationRepository;
     private $configuration;
+
+    /**
+     * Constructor
+     *
+     * @param CRUDConfigurationRepositoryInterface $configurationRepository
+     * @param Request                              $request
+     */
     public function __construct(CRUDConfigurationRepositoryInterface $configurationRepository, Request $request)
     {
         $this->request = $request;
@@ -27,6 +37,9 @@ class CRUDRequest implements CRUDRequestInterface
         $this->configuration = null;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getConfiguration()
     {
         if (!$this->configuration) {
@@ -36,11 +49,17 @@ class CRUDRequest implements CRUDRequestInterface
         return $this->configuration;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getRequest()
     {
         return $this->request;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getRedirectionManager()
     {
         if ($this->getConfiguration()) {
@@ -48,6 +67,9 @@ class CRUDRequest implements CRUDRequestInterface
         }
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getWorker()
     {
         if ($this->getConfiguration()) {
