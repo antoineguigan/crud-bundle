@@ -19,27 +19,29 @@ class CRUDLinkRendererStrategyTest extends \PHPUnit_Framework_TestCase
 {
     protected $CRUDRequest;
     protected $renderer;
+    protected $rendererStrategy;
 
     protected function setUp()
     {
         $this->CRUDRequest = $this->getMock('Qimnet\CRUDBundle\HTTP\CRUDRequestInterface');
-        $this->renderer = new CRUDLinkRendererStrategy($this->CRUDRequest);
-        $this->renderer->setCRUDRequest($CRUDRequest);
+        $this->renderer = $this->getMock('Qimnet\TableBundle\Templating\TableRendererInterface');
+        $this->rendererStrategy = new CRUDLinkRendererStrategy($this->renderer);
+        $this->rendererStrategy->setCRUDRequest($this->CRUDRequest);
     }
 
     public function testCanRender()
     {
-        $this->assertTrue($this->renderer>canRender('any'));
+        $this->assertTrue($this->rendererStrategy->canRender('any'));
     }
 
     public function testGetName()
     {
-        $this->assertEquals('crud_link', $this->renderer->getName());
+        $this->assertEquals('crud_link', $this->rendererStrategy->getName());
     }
 
     public function testGetPriority()
     {
-        $this->assertFalse($this->renderer->getPriority());
+        $this->assertFalse($this->rendererStrategy->getPriority());
     }
 
     public function getTestRenderData() {
@@ -60,6 +62,9 @@ class CRUDLinkRendererStrategyTest extends \PHPUnit_Framework_TestCase
             'key2'=>'value2'
         );
         $configuration = $this->getMock('Qimnet\CRUDExtensionsBundle\Configuration\CRUDConfigurationInterface');
+        $this->renderer->expects($this->once())
+                ->method('render')
+                ->will($this->returnValue('text'));
         $this->CRUDRequest
                 ->expects($this->any())
                 ->method('getConfiguration')
@@ -77,15 +82,15 @@ class CRUDLinkRendererStrategyTest extends \PHPUnit_Framework_TestCase
         $configuration->expects($this->any())
                 ->method('getShowTemplate')
                 ->will($this->returnValue($withShowTemplate ? 'show_template' : null));
-        $pathGenerator = $this->getMock(\Qimnet\CRUDBundle\Routing\CRUDPathGeneratorInterface);
+        $pathGenerator = $this->getMock('Qimnet\CRUDBundle\Routing\CRUDPathGeneratorInterface');
         $configuration->expects($this->any())
                 ->method('getPathGenerator')
                 ->will($this->returnValue($pathGenerator));
         $pathGenerator
                 ->expects($this->any())
                 ->method('generate')
-                ->with($this->equalTo($action), $this->sameAs($options['object']), $this->equalTo($options['object_vars']))
+                ->with($this->equalTo($action), $this->identicalTo($options['object']), $this->equalTo($options['object_vars']))
                 ->will($this->returnValue('url'));
-        $this->assertEquals($action ? '<a href="url">text</a>' : 'text', $this->renderer->render('value', $options));
+        $this->assertEquals($action ? '<a href="url">text</a>' : 'text', $this->rendererStrategy->render('value', $options));
     }
 }
